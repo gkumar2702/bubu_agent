@@ -62,11 +62,27 @@ class MessageResult:
     details: Dict[str, Any]
 
 
+@dataclass(slots=True)
+class SongRecommendation:
+    """Song recommendation result."""
+    song_id: str
+    title: str
+    url: str
+
+
 class StorageProtocol(Protocol):
     """Protocol for storage operations."""
     
     def is_message_sent(self, date_obj: date, message_type: MessageType) -> bool:
         """Check if a message was already sent for the given date and type."""
+        ...
+    
+    def record_song_recommendation(self, date_obj: date, slot: str, song_id: str, song_title: str) -> None:
+        """Record a song recommendation."""
+        ...
+    
+    def get_recent_song_ids(self, days: int = 30) -> set[str]:
+        """Get set of recently recommended song IDs."""
         ...
 
 
@@ -118,6 +134,10 @@ class ConfigFacade:
         """Get cheesy lines."""
         ...
     
+    def get_song_recommendation_setting(self, key: str, default: Any = None) -> Any:
+        """Get song recommendation setting."""
+        ...
+    
     @property
     def gf_name(self) -> str:
         """Get girlfriend's name."""
@@ -135,3 +155,11 @@ class NullStorage:
     def is_message_sent(self, date_obj: date, message_type: MessageType) -> bool:
         """Always return False (no messages sent)."""
         return False
+    
+    def record_song_recommendation(self, date_obj: date, slot: str, song_id: str, song_title: str) -> None:
+        """Do nothing for null storage."""
+        pass
+    
+    def get_recent_song_ids(self, days: int = 30) -> set[str]:
+        """Return empty set for null storage."""
+        return set()

@@ -56,10 +56,32 @@ class Storage:
                 )
             """)
             
-            # Create index for faster lookups
+            # Create table for song recommendations
+            conn.execute("""
+                CREATE TABLE IF NOT EXISTS song_recommendations (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    date TEXT NOT NULL,
+                    slot TEXT NOT NULL,
+                    song_id TEXT NOT NULL,
+                    song_title TEXT NOT NULL,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            """)
+            
+            # Create indexes for faster lookups
             conn.execute("""
                 CREATE INDEX IF NOT EXISTS idx_messages_date_slot 
                 ON messages_sent(date, slot)
+            """)
+            
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_song_reco_date_slot 
+                ON song_recommendations(date, slot)
+            """)
+            
+            conn.execute("""
+                CREATE INDEX IF NOT EXISTS idx_song_reco_song_id 
+                ON song_recommendations(song_id)
             """)
             
             conn.commit()
@@ -278,3 +300,60 @@ class Storage:
                 error=str(e)
             )
             return 0
+    
+    def record_song_recommendation(
+        self,
+        date_obj: date,
+        slot: str,
+        song_id: str,
+        song_title: str
+    ) -> None:
+        """Record a song recommendation."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                conn.execute("""
+                    INSERT INTO song_recommendations 
+                    (date, slot, song_id, song_title, created_at)
+                    VALUES (?, ?, ?, ?, ?)
+                """, (
+                    date_obj.isoformat(),
+                    slot,
+                    song_id,
+                    song_title,
+                    datetime.now().isoformat()
+                ))
+                conn.commit()
+                
+            logger.info(
+                "Song recommendation recorded",
+                date=date_obj.isoformat(),
+                slot=slot,
+                song_id=song_id,
+                song_title=song_title
+            )
+            
+        except Exception as e:
+            logger.error(f"Failed to record song recommendation: {e}")
+    
+    def get_recent_song_ids(self, days: int = 30) -> set[str]:
+        """Get set of recently recommended song IDs."""
+        try:
+            with sqlite3.connect(self.db_path) as conn:
+                cursor = conn.execute("""
+                    SELECT DISTINCT song_id 
+                    FROM song_recommendations 
+                    WHERE date >= date('now', '-{} days')
+                """.format(days))
+                
+                song_ids = {row[0] for row in cursor.fetchall()}
+                
+            logger.info(
+                "Retrieved recent song IDs",
+                count=len(song_ids),
+                days=days
+            )
+            return song_ids
+            
+        except Exception as e:
+            logger.error(f"Failed to get recent song IDs: {e}")
+            return set()

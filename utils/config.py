@@ -164,6 +164,10 @@ class ConfigManager:
         """Get cheesy romantic lines."""
         lines = self.get('cheesy_lines', [])
         return lines if isinstance(lines, list) else []
+    
+    def get_song_recommendation_setting(self, key: str, default: Any = None) -> Any:
+        """Get song recommendation setting from config."""
+        return self.get(f'song_recommendation.{key}', default)
 
 
 # Global configuration instance

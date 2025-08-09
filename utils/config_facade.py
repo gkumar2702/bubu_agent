@@ -48,3 +48,7 @@ class ConfigFacadeImpl(ConfigFacade):
     def daily_flirty_tone(self) -> str:
         """Get daily flirty tone."""
         return config.settings.daily_flirty_tone
+    
+    def get_song_recommendation_setting(self, key: str, default: Any = None) -> Any:
+        """Get song recommendation setting."""
+        return config.get_song_recommendation_setting(key, default)

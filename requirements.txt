@@ -37,3 +37,9 @@ pytest-mock>=3.12.0
 # isort>=5.12.0
 # flake8>=6.0.0
 # mypy>=1.7.0
+
+# Song Recommendation Dependencies
+sentence-transformers>=2.2.0
+pandas>=2.0.0
+numpy>=1.24.0
+faiss-cpu>=1.7.0  # Use faiss-gpu for GPU support

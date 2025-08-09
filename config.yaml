@@ -118,6 +118,24 @@ huggingface:
   timeout_seconds: 30
   max_retries: 3
 
+# Bollywood song recommendation settings
+song_recommendation:
+  song_reco_enabled: true
+  song_language_prefs: ["Hindi", "English"]
+  song_region_code: "IN"
+  song_blacklist_terms: ["explicit", "remix 8D", "nightcore"]
+  song_max_age_days: 36500  # allow classics
+  song_cache_days: 30
+  song_insertion_templates:
+    morning: "This song made me think of us: {title} — {url}"
+    flirty: "Thinking of you… and this song: {title} — {url}"
+    night: "Before you sleep, this one for us: {title} — {url}"
+  song_catalog_path: "data/bollywood_songs.csv"
+  song_embeddings_path: "data/bollywood_songs_embeddings.npy"
+  song_faiss_index_path: "data/bollywood_songs.index"
+  hf_embedding_model: "sentence-transformers/all-MiniLM-L6-v2"
+  hf_cross_encoder: "cross-encoder/ms-marco-MiniLM-L-6-v2"
+
 # Prompt templates for each message type
 prompt_templates:
   morning:

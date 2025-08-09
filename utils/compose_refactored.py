@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import asyncio
 import functools
+import json
 from datetime import date
 from typing import Any, Dict, List, Optional
 
@@ -12,9 +13,19 @@ from .storage import Storage
 from .storage_protocol import StorageProtocolImpl
 from .types import (
     ConfigFacade, EMOJI_PATTERN, GenerationResult, LLMProtocol, LLMResult,
-    MessageResult, MessageStatus, MessageType, NullStorage, StorageProtocol
+    MessageResult, MessageStatus, MessageType, NullStorage, StorageProtocol,
+    SongRecommendation
 )
 from .utils import SeededRandom, get_date_seed, get_logger
+
+# Import song recommender
+try:
+    from recommenders.hf_bollywood import create_recommender
+    SONG_RECOMMENDER_AVAILABLE = True
+except ImportError:
+    SONG_RECOMMENDER_AVAILABLE = False
+    logger = get_logger(__name__)
+    logger.warning("Song recommender not available. Song recommendations will be disabled.")
 
 logger = get_logger(__name__)
 
@@ -38,6 +49,42 @@ class MessageComposer:
         self.llm = llm
         self.config = config
         self.storage = storage
+        
+        # Initialize song recommender if available
+        self.song_recommender = None
+        if SONG_RECOMMENDER_AVAILABLE:
+            self._init_song_recommender()
+    
+    def _init_song_recommender(self) -> None:
+        """Initialize the song recommender."""
+        try:
+            song_enabled = self.config.get_song_recommendation_setting("song_reco_enabled", False)
+            if not song_enabled:
+                logger.info("Song recommendations disabled in config")
+                return
+            
+            catalog_path = self.config.get_song_recommendation_setting("song_catalog_path", "data/bollywood_songs.csv")
+            embeddings_path = self.config.get_song_recommendation_setting("song_embeddings_path")
+            faiss_index_path = self.config.get_song_recommendation_setting("song_faiss_index_path")
+            embed_model = self.config.get_song_recommendation_setting("hf_embedding_model", "sentence-transformers/all-MiniLM-L6-v2")
+            cross_model = self.config.get_song_recommendation_setting("hf_cross_encoder", "cross-encoder/ms-marco-MiniLM-L-6-v2")
+            
+            self.song_recommender = create_recommender(
+                catalog_path=catalog_path,
+                embeddings_path=embeddings_path,
+                faiss_index_path=faiss_index_path,
+                embed_model=embed_model,
+                cross_model=cross_model
+            )
+            
+            if self.song_recommender:
+                logger.info("Song recommender initialized successfully")
+            else:
+                logger.warning("Failed to initialize song recommender")
+                
+        except Exception as e:
+            logger.error(f"Failed to initialize song recommender: {e}")
+            self.song_recommender = None
     
     async def compose_message(
         self,
@@ -91,8 +138,11 @@ class MessageComposer:
                     self.config.get_general_setting("max_emojis", 5)
                 )
                 
+                # Add song recommendation if available
+                final_text = await self._add_song_recommendation(validated_text, message_type, date_obj)
+                
                 return MessageResult(
-                    text=validated_text,
+                    text=final_text,
                     status=MessageStatus.AI_GENERATED,
                     details=generation_result.details
                 )
@@ -106,8 +156,12 @@ class MessageComposer:
             
             # Fallback to template
             message = self._get_fallback_message(message_type, closer, date_obj)
+            
+            # Add song recommendation if available
+            final_message = await self._add_song_recommendation(message, message_type, date_obj)
+            
             return MessageResult(
-                text=message,
+                text=final_message,
                 status=MessageStatus.FALLBACK,
                 details={"reason": "ai_generation_failed"}
             )
@@ -121,8 +175,12 @@ class MessageComposer:
             # Emergency fallback
             closer = self._get_signature_closer(date_obj)
             message = self._get_fallback_message(message_type, closer, date_obj)
+            
+            # Add song recommendation if available
+            final_message = await self._add_song_recommendation(message, message_type, date_obj)
+            
             return MessageResult(
-                text=message,
+                text=final_message,
                 status=MessageStatus.ERROR_FALLBACK,
                 details={"error": str(e)}
             )
@@ -496,6 +554,195 @@ class MessageComposer:
                 message_type=message_type.value
             )
             return []
+    
+    async def pick_song(
+        self,
+        message_type: MessageType,
+        day_ctx: Dict[str, Any]
+    ) -> Optional[SongRecommendation]:
+        """Pick a song recommendation for the message type."""
+        if not self.song_recommender:
+            return None
+        
+        try:
+            # Get recent song IDs to avoid repeats
+            cache_days = self.config.get_song_recommendation_setting("song_cache_days", 30)
+            recent_ids = self.storage.get_recent_song_ids(cache_days)
+            logger.info(f"Recent IDs retrieved: {type(recent_ids)}, value: {recent_ids}")
+            
+            # Generate intent using LLM
+            intent = await self._generate_song_intent(message_type)
+            if not intent:
+                return None
+            
+            # Build query text
+            query_text = self._build_song_query(message_type, intent)
+            
+            # Get preferences
+            preferences = self._get_song_preferences()
+            
+            # Get recommendation
+            logger.info(f"Calling recommend_song with recent_ids: {type(recent_ids)}, value: {recent_ids}")
+            song_dict = self.song_recommender.recommend_song(
+                query_text=query_text,
+                preferences=preferences,
+                recent_ids=recent_ids
+            )
+            
+            if song_dict:
+                return SongRecommendation(
+                    song_id=song_dict["song_id"],
+                    title=song_dict["title"],
+                    url=song_dict["url"]
+                )
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Failed to pick song: {e}")
+            return None
+    
+    async def _generate_song_intent(self, message_type: MessageType) -> Optional[Dict[str, Any]]:
+        """Generate song intent using LLM."""
+        try:
+            system_prompt = """You are a music concierge for Bollywood romance songs.
+
+Message type: {message_type}
+Vibe mapping:
+- morning → soft, warm, motivational romance
+- flirty → playful, upbeat, teasing
+- night → calm, cozy, dreamy
+
+Preferred languages: {language_prefs}
+Region: {region}
+
+Avoid explicit/breakup/sad themes.
+
+Return JSON only:
+{{ "keywords": [...], "allow_classic": true|false, "language_priority": [...], "disallow": [...] }}"""
+
+            language_prefs = self.config.get_song_recommendation_setting("song_language_prefs", ["Hindi"])
+            region = self.config.get_song_recommendation_setting("song_region_code", "IN")
+            
+            system_prompt = system_prompt.format(
+                message_type=message_type.value,
+                language_prefs=language_prefs,
+                region=region
+            )
+            
+            user_prompt = f"Generate song intent for {message_type.value} message"
+            
+            response = await self.llm.generate_text(
+                system_prompt=system_prompt,
+                user_prompt=user_prompt,
+                max_new_tokens=100,
+                temperature=0.7,
+                top_p=0.9,
+                do_sample=True
+            )
+            
+            if response:
+                # Try to parse JSON from response
+                try:
+                    # Extract JSON from response (handle markdown code blocks)
+                    json_start = response.find('{')
+                    json_end = response.rfind('}') + 1
+                    if json_start >= 0 and json_end > json_start:
+                        json_str = response[json_start:json_end]
+                        return json.loads(json_str)
+                except (json.JSONDecodeError, ValueError):
+                    logger.warning(f"Failed to parse song intent JSON: {response}")
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Failed to generate song intent: {e}")
+            return None
+    
+    def _build_song_query(self, message_type: MessageType, intent: Dict[str, Any]) -> str:
+        """Build query text for song search."""
+        vibe_map = {
+            MessageType.MORNING: "soft warm motivational romance",
+            MessageType.FLIRTY: "playful upbeat teasing romantic",
+            MessageType.NIGHT: "calm cozy dreamy romantic"
+        }
+        
+        vibe = vibe_map.get(message_type, "romantic")
+        keywords = intent.get("keywords", [])
+        
+        query_parts = [vibe] + keywords
+        return " ".join(query_parts)
+    
+    def _get_song_preferences(self) -> Dict[str, Any]:
+        """Get song preferences from config."""
+        return {
+            "language_priority": self.config.get_song_recommendation_setting("song_language_prefs", ["Hindi"]),
+            "blacklist": self.config.get_song_recommendation_setting("song_blacklist_terms", []),
+            "max_age_days": self.config.get_song_recommendation_setting("song_max_age_days", 36500)
+        }
+    
+    def _format_song_line(self, message_type: MessageType, title: str, url: str) -> str:
+        """Format song recommendation line."""
+        templates = self.config.get_song_recommendation_setting("song_insertion_templates", {})
+        template = templates.get(message_type.value, "This song made me think of us: {title} — {url}")
+        
+        return template.format(title=title.strip(), url=url)
+    
+    def _add_song_to_message(self, message: str, song: SongRecommendation, message_type: MessageType) -> str:
+        """Add song recommendation to message."""
+        song_line = self._format_song_line(message_type, song.title, song.url)
+        
+        # Check if adding song would exceed max length
+        max_length = self.config.get_general_setting("max_message_length", 700)
+        if len(message + "\n\n" + song_line) <= max_length:
+            return message + "\n\n" + song_line
+        else:
+            # Trim main message to make room for song
+            available_space = max_length - len(song_line) - 2  # 2 for newlines
+            if available_space > 50:  # Ensure we have reasonable space
+                return message[:available_space] + "...\n\n" + song_line
+            else:
+                # If not enough space, just return original message
+                return message
+    
+    async def _add_song_recommendation(self, message: str, message_type: MessageType, date_obj: date) -> str:
+        """Add song recommendation to message if available."""
+        try:
+            # Check if song recommendations are enabled
+            song_enabled = self.config.get_song_recommendation_setting("song_reco_enabled", False)
+            if not song_enabled or not self.song_recommender:
+                return message
+            
+            # Pick a song
+            day_ctx = {"date": date_obj.isoformat()}
+            song = await self.pick_song(message_type, day_ctx)
+            
+            if song:
+                # Add song to message
+                final_message = self._add_song_to_message(message, song, message_type)
+                
+                # Record the song recommendation
+                self.storage.record_song_recommendation(
+                    date_obj=date_obj,
+                    slot=message_type.value,
+                    song_id=song.song_id,
+                    song_title=song.title
+                )
+                
+                logger.info(
+                    "Added song recommendation to message",
+                    song_id=song.song_id,
+                    song_title=song.title,
+                    message_type=message_type.value
+                )
+                
+                return final_message
+            
+            return message
+            
+        except Exception as e:
+            logger.error(f"Failed to add song recommendation: {e}")
+            return message
 
 
 def create_message_composer_refactored(

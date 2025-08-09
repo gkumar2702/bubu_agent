@@ -26,3 +26,25 @@ class StorageProtocolImpl(StorageProtocol):
         except Exception:
             # If storage fails, assume message not sent
             return False
+    
+    def record_song_recommendation(self, date_obj: date, slot: str, song_id: str, song_title: str) -> None:
+        """Record a song recommendation."""
+        if not self.storage:
+            return
+        
+        try:
+            self.storage.record_song_recommendation(date_obj, slot, song_id, song_title)
+        except Exception:
+            # If storage fails, silently continue
+            pass
+    
+    def get_recent_song_ids(self, days: int = 30) -> set[str]:
+        """Get set of recently recommended song IDs."""
+        if not self.storage:
+            return set()
+        
+        try:
+            return self.storage.get_recent_song_ids(days)
+        except Exception:
+            # If storage fails, return empty set
+            return set()
