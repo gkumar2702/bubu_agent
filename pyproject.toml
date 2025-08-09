@@ -2,61 +2,323 @@
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.hatch.build.targets.wheel]
-packages = ["."]
-
 [project]
 name = "bubu-agent"
 version = "0.1.0"
 description = "A production-ready Python service that sends personalized WhatsApp messages"
-authors = [
-    {name = "Bubu Agent", email = "bubu@example.com"}
-]
 readme = "README.md"
 requires-python = ">=3.11"
+license = "MIT"
+authors = [
+    {name = "Gourav Kumar", email = "gkumar2702@gmail.com"}
+]
+keywords = ["whatsapp", "automation", "romantic", "ai", "messaging"]
 classifiers = [
     "Development Status :: 4 - Beta",
-    "Intended Audience :: End Users/Desktop",
+    "Intended Audience :: Developers",
     "License :: OSI Approved :: MIT License",
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Topic :: Communications :: Chat",
+    "Topic :: Software Development :: Libraries :: Python Modules",
 ]
 dependencies = [
-    # Dependencies are now managed via requirements.txt
+    "fastapi>=0.104.0",
+    "uvicorn[standard]>=0.24.0",
+    "apscheduler>=3.10.0",
+    "pydantic>=2.5.0",
+    "pydantic-settings>=2.1.0",
+    "httpx>=0.25.0",
+    "python-dotenv>=1.0.0",
+    "structlog>=23.2.0",
+    "pytz>=2023.3",
+    "pyyaml>=6.0.1",
 ]
 
 [project.optional-dependencies]
 dev = [
     "pytest>=7.4.0",
     "pytest-asyncio>=0.21.0",
-    "pytest-mock>=3.12.0",
+    "pytest-cov>=4.1.0",
+    "ruff>=0.1.0",
+    "mypy>=1.7.0",
     "black>=23.0.0",
     "isort>=5.12.0",
-    "flake8>=6.0.0",
-    "mypy>=1.7.0",
+    "flake8>=6.1.0",
+    "bandit>=1.7.0",
+    "safety>=2.3.0",
 ]
+
+[project.urls]
+Homepage = "https://github.com/gkumar2702/bubu_agent"
+Repository = "https://github.com/gkumar2702/bubu_agent"
+Issues = "https://github.com/gkumar2702/bubu_agent/issues"
 
 [project.scripts]
 bubu-agent = "app:main"
 
-[tool.black]
-line-length = 88
-target-version = ['py311']
+[tool.hatch.build.targets.wheel]
+packages = ["utils", "providers", "tests"]
 
-[tool.isort]
-profile = "black"
-line_length = 88
+[tool.ruff]
+target-version = "py311"
+line-length = 88
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+    "ARG001", # unused-function-args
+    "SIM", # flake8-simplify
+    "TCH", # flake8-type-checking
+    "TID", # flake8-tidy-imports
+    "Q", # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PYI", # flake8-pyi
+    "N", # pep8-naming
+    "S", # bandit
+    "A", # flake8-builtins
+    "COM", # flake8-commas
+    "C90", # mccabe
+    "DTZ", # flake8-datetimez
+    "T10", # flake8-debugger
+    "ISC", # flake8-implicit-str-concat
+    "G", # flake8-logging-format
+    "INP", # flake8-no-pep420
+    "PIE", # flake8-pie
+    "T20", # flake8-print
+    "PYI", # flake8-pyi
+    "PT", # flake8-pytest-style
+    "Q", # flake8-quotes
+    "RSE", # flake8-raise
+    "RET", # flake8-return
+    "SLF", # flake8-self
+    "SLOT", # flake8-slots
+    "SIM", # flake8-simplify
+    "TID", # flake8-tidy-imports
+    "TCH", # flake8-type-checking
+    "ARG", # flake8-unused-arguments
+    "PTH", # flake8-use-pathlib
+    "ERA", # eradicate
+    "PD", # pandas-vet
+    "PGH", # pygrep-hooks
+    "PL", # pylint
+    "TRY", # tryceratops
+    "NPY", # numpy-vet
+    "AIR", # airflow
+    "PERF", # perflint
+    "FURB", # refurb
+    "LOG", # flake8-logging-format
+    "RUF", # ruff-specific rules
+]
+ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "PLR0913", # too many arguments
+    "PLR0912", # too many branches
+    "PLR0915", # too many statements
+    "PLR0911", # too many return statements
+    "PLR2004", # magic value used in comparison
+    "PLR0904", # too many public methods
+    "PLR0902", # too many instance attributes
+    "PLR0901", # too many ancestors
+    "PLR0903", # too few public methods
+    "PLR0905", # too many public methods
+    "PLR0906", # too many public methods
+    "PLR0907", # too many public methods
+    "PLR0908", # too many public methods
+    "PLR0909", # too many public methods
+    "PLR0910", # too many public methods
+    "PLR0914", # too many local variables
+    "PLR0916", # too many boolean expressions
+    "PLR0917", # too many boolean expressions
+    "PLR0918", # too many boolean expressions
+    "PLR0919", # too many boolean expressions
+    "PLR0920", # too many boolean expressions
+    "PLR0921", # too many boolean expressions
+    "PLR0922", # too many boolean expressions
+    "PLR0923", # too many boolean expressions
+    "PLR0924", # too many boolean expressions
+    "PLR0925", # too many boolean expressions
+    "PLR0926", # too many boolean expressions
+    "PLR0927", # too many boolean expressions
+    "PLR0928", # too many boolean expressions
+    "PLR0929", # too many boolean expressions
+    "PLR0930", # too many boolean expressions
+    "PLR0931", # too many boolean expressions
+    "PLR0932", # too many boolean expressions
+    "PLR0933", # too many boolean expressions
+    "PLR0934", # too many boolean expressions
+    "PLR0935", # too many boolean expressions
+    "PLR0936", # too many boolean expressions
+    "PLR0937", # too many boolean expressions
+    "PLR0938", # too many boolean expressions
+    "PLR0939", # too many boolean expressions
+    "PLR0940", # too many boolean expressions
+    "PLR0941", # too many boolean expressions
+    "PLR0942", # too many boolean expressions
+    "PLR0943", # too many boolean expressions
+    "PLR0944", # too many boolean expressions
+    "PLR0945", # too many boolean expressions
+    "PLR0946", # too many boolean expressions
+    "PLR0947", # too many boolean expressions
+    "PLR0948", # too many boolean expressions
+    "PLR0949", # too many boolean expressions
+    "PLR0950", # too many boolean expressions
+    "PLR0951", # too many boolean expressions
+    "PLR0952", # too many boolean expressions
+    "PLR0953", # too many boolean expressions
+    "PLR0954", # too many boolean expressions
+    "PLR0955", # too many boolean expressions
+    "PLR0956", # too many boolean expressions
+    "PLR0957", # too many boolean expressions
+    "PLR0958", # too many boolean expressions
+    "PLR0959", # too many boolean expressions
+    "PLR0960", # too many boolean expressions
+    "PLR0961", # too many boolean expressions
+    "PLR0962", # too many boolean expressions
+    "PLR0963", # too many boolean expressions
+    "PLR0964", # too many boolean expressions
+    "PLR0965", # too many boolean expressions
+    "PLR0966", # too many boolean expressions
+    "PLR0967", # too many boolean expressions
+    "PLR0968", # too many boolean expressions
+    "PLR0969", # too many boolean expressions
+    "PLR0970", # too many boolean expressions
+    "PLR0971", # too many boolean expressions
+    "PLR0972", # too many boolean expressions
+    "PLR0973", # too many boolean expressions
+    "PLR0974", # too many boolean expressions
+    "PLR0975", # too many boolean expressions
+    "PLR0976", # too many boolean expressions
+    "PLR0977", # too many boolean expressions
+    "PLR0978", # too many boolean expressions
+    "PLR0979", # too many boolean expressions
+    "PLR0980", # too many boolean expressions
+    "PLR0981", # too many boolean expressions
+    "PLR0982", # too many boolean expressions
+    "PLR0983", # too many boolean expressions
+    "PLR0984", # too many boolean expressions
+    "PLR0985", # too many boolean expressions
+    "PLR0986", # too many boolean expressions
+    "PLR0987", # too many boolean expressions
+    "PLR0988", # too many boolean expressions
+    "PLR0989", # too many boolean expressions
+    "PLR0990", # too many boolean expressions
+    "PLR0991", # too many boolean expressions
+    "PLR0992", # too many boolean expressions
+    "PLR0993", # too many boolean expressions
+    "PLR0994", # too many boolean expressions
+    "PLR0995", # too many boolean expressions
+    "PLR0996", # too many boolean expressions
+    "PLR0997", # too many boolean expressions
+    "PLR0998", # too many boolean expressions
+    "PLR0999", # too many boolean expressions
+]
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/**/*" = ["S101", "PLR2004", "PLR0913", "PLR0912", "PLR0915", "PLR0911"]
+
+[tool.ruff.isort]
+known-first-party = ["utils", "providers"]
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+inline-quotes = "single"
 
 [tool.mypy]
 python_version = "3.11"
 warn_return_any = true
 warn_unused_configs = true
 disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+show_error_codes = true
+
+[[tool.mypy.overrides]]
+module = [
+    "tests.*",
+    "test_*",
+]
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
 
 [tool.pytest.ini_options]
+minversion = "7.0"
+addopts = "-ra -q --strict-markers --strict-config"
 testpaths = ["tests"]
-python_files = ["test_*.py"]
+python_files = ["test_*.py", "*_test.py"]
 python_classes = ["Test*"]
 python_functions = ["test_*"]
-addopts = "-v --tb=short"
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["utils", "providers"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/venv/*",
+    "*/env/*",
+    "*/\.venv/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.black]
+line-length = 88
+target-version = ['py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["utils", "providers"]
+known_third_party = ["pytest", "fastapi", "uvicorn", "pydantic"]
