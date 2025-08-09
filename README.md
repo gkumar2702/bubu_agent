@@ -25,6 +25,24 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 - **Observability**: Comprehensive logging and health monitoring
 - **API Interface**: RESTful API for monitoring and manual control
 - **Free API Support**: Multiple free WhatsApp API options with detailed setup guides
+- **Production Ready**: Fully tested and deployed with comprehensive error handling
+
+## 🎯 Current Status
+
+**✅ Fully Operational**
+- **Ultramsg Integration**: Complete and tested
+- **Configuration Validation**: All providers supported
+- **Interactive Sender**: Working with message preview
+- **Idempotency**: Active protection against duplicate sends
+- **API Endpoints**: All endpoints functional
+- **Error Handling**: Comprehensive error management
+
+**📊 Recent Updates:**
+- ✅ Added comprehensive Ultramsg support
+- ✅ Fixed configuration validation errors
+- ✅ Enhanced interactive sender functionality
+- ✅ Improved error handling and logging
+- ✅ Added detailed setup guides for all providers
 
 ## Message Schedule
 
@@ -62,7 +80,7 @@ pip install -r requirements.txt
 # 4. Generate API token
 python setup/generate_token.py
 
-90601ca56dd1ca3bc9db7d49fb475574# 5. Choose WhatsApp provider and configure
+# 5. Choose WhatsApp provider and configure
 # Option A: Meta WhatsApp (Recommended - FREE)
 python setup/switch_to_meta.py
 # Then edit .env with your Meta credentials
@@ -82,7 +100,7 @@ uvicorn app:app --host 0.0.0.0 --port 8000
 ### Option 1: Automated Setup (Recommended)
 
 **On macOS/Linux:**
-90601ca56dd1ca3bc9db7d49fb475574```bash
+```bash
 git clone https://github.com/gkumar2702/bubu_agent.git
 cd bubu_agent
 ./setup.sh
@@ -252,6 +270,16 @@ curl -X POST "http://localhost:8000/send-now" \
 - ✅ Verify your `HF_API_KEY` is correct
 - ✅ Check that your Hugging Face account has API access
 - ✅ Ensure the `HF_MODEL_ID` is valid and accessible
+
+#### Issue: "Configuration validation errors"
+- ✅ Ensure `whatsapp_provider` is one of: `twilio`, `meta`, `ultramsg`
+- ✅ Check that all required fields for your provider are set
+- ✅ Verify no extra spaces or quotes in environment variables
+
+#### Issue: "Message already sent today"
+- ✅ This is expected behavior - idempotency protection is working
+- ✅ Check the database: `sqlite3 bubu_agent.db "SELECT * FROM messages_sent ORDER BY date DESC LIMIT 5;"`
+- ✅ Wait until tomorrow or use a different message type
 
 ## Configuration
 
@@ -430,6 +458,11 @@ print(secrets.token_urlsafe(32))
 
 ### 📱 WhatsApp API Setup
 
+**🎯 Current Status: All providers fully supported and tested**
+- ✅ **Ultramsg**: Fully operational with QR code setup
+- ✅ **Meta WhatsApp**: Production-ready with 1000 free messages/month
+- ⚠️ **Twilio**: Limited free tier, not recommended for production
+
 #### Option 1: Meta WhatsApp Cloud API (Recommended - FREE)
 
 **✅ Advantages:**
@@ -446,6 +479,7 @@ print(secrets.token_urlsafe(32))
 - **No complex verification**
 - **Reliable delivery**
 - **Good documentation**
+- **✅ Currently Tested & Working**
 
 **📋 Quick Setup:**
 ```bash
@@ -456,7 +490,7 @@ python setup/switch_to_ultramsg.py
 # See: ULTRAMSG_SETUP_GUIDE.md
 ```
 
-**📋 Quick Setup:**
+**📋 Detailed Setup:**
 
 1. **Create Meta Developer Account:**
    - Visit [developers.facebook.com/apps/](https://developers.facebook.com/apps/)
