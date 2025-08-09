@@ -34,6 +34,24 @@ Each time includes ±20 minutes of randomization and respects do-not-disturb hou
 
 ## Quick Start
 
+### Option 1: Automated Setup (Recommended)
+
+**On macOS/Linux:**
+```bash
+git clone https://github.com/gkumar2702/bubu_agent.git
+cd bubu_agent
+./setup.sh
+```
+
+**On Windows:**
+```cmd
+git clone https://github.com/gkumar2702/bubu_agent.git
+cd bubu_agent
+setup.bat
+```
+
+### Option 2: Manual Setup
+
 ### 1. Clone and Setup
 
 ```bash
