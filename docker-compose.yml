@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  bubu-agent:
+    build: .
+    container_name: bubu-agent
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      - ./data:/app/data
+      - ./logs:/app/logs
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/healthz"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    environment:
+      - PYTHONUNBUFFERED=1
+      - TZ=Asia/Kolkata
+    networks:
+      - bubu-network
+
+  # Optional: Add a reverse proxy (nginx)
+  nginx:
+    image: nginx:alpine
+    container_name: bubu-nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/nginx.conf:ro
+      - ./ssl:/etc/nginx/ssl:ro
+    depends_on:
+      - bubu-agent
+    restart: unless-stopped
+    networks:
+      - bubu-network
+    profiles:
+      - production
+
+networks:
+  bubu-network:
+    driver: bridge
+
+volumes:
+  data:
+  logs:

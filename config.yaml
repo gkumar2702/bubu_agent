@@ -1,0 +1,127 @@
+# Bubu Agent Configuration
+# Message composition and style settings
+
+# General settings
+general:
+  max_message_length: 300
+  allow_emojis: true
+  max_emojis: 3
+  enable_safety_filters: true
+  enable_content_policy: true
+
+# Message tone settings
+tone:
+  daily_flirty_tone: "playful"  # Options: playful, romantic, witty
+  overall_style: "warm"  # Options: warm, sweet, caring
+  cultural_neutrality: true
+
+# Signature closers (rotating)
+signature_closers:
+  - "— your bubu"
+  - "— bubu ❤️"
+  - "— your love"
+  - "— bubu 💕"
+  - "— with love, bubu"
+
+# Fallback templates for each message type
+fallback_templates:
+  morning:
+    - "Good morning {GF_NAME}! 🌅 Wishing you a beautiful day filled with joy and success. {closer}"
+    - "Morning {GF_NAME}! ☀️ May your day be as wonderful as you are. {closer}"
+    - "Good morning {GF_NAME}! 🌞 Here's to a day full of possibilities and smiles. {closer}"
+    - "Rise and shine {GF_NAME}! ✨ You've got this day in the bag. {closer}"
+    - "Good morning {GF_NAME}! 🌅 Your positive energy will light up the world today. {closer}"
+    - "Morning {GF_NAME}! ☀️ Every new day is a fresh start - make it count! {closer}"
+    - "Good morning {GF_NAME}! 🌞 You're capable of amazing things today. {closer}"
+    - "Rise and shine {GF_NAME}! ✨ Your strength inspires everyone around you. {closer}"
+    - "Good morning {GF_NAME}! 🌅 Today is your day to shine bright. {closer}"
+    - "Morning {GF_NAME}! ☀️ You bring so much joy to the world. {closer}"
+
+  flirty:
+    - "Hey {GF_NAME}! 😊 Just thinking about your beautiful smile and how it brightens my day. {closer}"
+    - "Hi {GF_NAME}! 💕 Your laugh is absolutely contagious - I can't help but smile thinking about it. {closer}"
+    - "Hey there {GF_NAME}! 😍 You're the highlight of my day, every day. {closer}"
+    - "Hi {GF_NAME}! 💖 Just wanted to remind you how amazing you are. {closer}"
+    - "Hey {GF_NAME}! 😊 Your positive energy is absolutely magnetic. {closer}"
+    - "Hi {GF_NAME}! 💕 You make every day feel like a special occasion. {closer}"
+    - "Hey there {GF_NAME}! 😍 Your kindness and warmth light up any room. {closer}"
+    - "Hi {GF_NAME}! 💖 You're the most beautiful person I know, inside and out. {closer}"
+    - "Hey {GF_NAME}! 😊 Just thinking about how lucky I am to have you. {closer}"
+    - "Hi {GF_NAME}! 💕 Your presence makes everything better. {closer}"
+
+  night:
+    - "Good night {GF_NAME}! 🌙 Thank you for being the amazing person you are. Sweet dreams! {closer}"
+    - "Night {GF_NAME}! 🌟 Rest well knowing you're loved and appreciated. {closer}"
+    - "Good night {GF_NAME}! 🌙 May your dreams be as beautiful as you are. {closer}"
+    - "Sweet dreams {GF_NAME}! 🌟 Thank you for another wonderful day. {closer}"
+    - "Good night {GF_NAME}! 🌙 You deserve all the peaceful rest in the world. {closer}"
+    - "Night {GF_NAME}! 🌟 Sleep tight, knowing you're cherished. {closer}"
+    - "Good night {GF_NAME}! 🌙 Your kindness makes the world a better place. {closer}"
+    - "Sweet dreams {GF_NAME}! 🌟 You're the best thing that's ever happened to me. {closer}"
+    - "Good night {GF_NAME}! 🌙 Rest peacefully, beautiful soul. {closer}"
+    - "Night {GF_NAME}! 🌟 Thank you for being you - perfect just as you are. {closer}"
+
+# Content policy settings
+content_policy:
+  forbidden_topics:
+    - "medical advice"
+    - "financial advice"
+    - "manipulative language"
+    - "explicit content"
+    - "political statements"
+    - "religious content"
+  
+  required_elements:
+    - "personalization"
+    - "respectful tone"
+    - "positive sentiment"
+
+# Hugging Face model settings
+huggingface:
+  max_new_tokens: 150
+  temperature: 0.8
+  top_p: 0.9
+  do_sample: true
+  timeout_seconds: 30
+  max_retries: 3
+
+# Prompt templates for each message type
+prompt_templates:
+  morning:
+    system: |
+      You are a loving partner sending a good morning message. Be warm, sweet, and include a short motivational line.
+      Keep it under 300 characters. Use 1-2 emojis max. Personalize with {GF_NAME}.
+      Be culturally neutral and avoid clichés.
+    
+    user: |
+      Create a good morning message for {GF_NAME}. Include:
+      - A sweet greeting
+      - A short motivational line (one sentence)
+      - A warm sign-off
+      Make it personal and uplifting.
+
+  flirty:
+    system: |
+      You are a loving partner sending a playful, flirty message. Be respectful and fun.
+      Keep it under 300 characters. Use 1-2 emojis max. Personalize with {GF_NAME}.
+      Tone: {DAILY_FLIRTY_TONE}. Be culturally neutral and avoid clichés.
+    
+    user: |
+      Create a {DAILY_FLIRTY_TONE} flirty message for {GF_NAME}. Include:
+      - A playful hook
+      - A unique personal compliment
+      - A short imaginative scenario (1 line)
+      Make it fun and respectful.
+
+  night:
+    system: |
+      You are a loving partner sending a good night message. Be gentle, calming, and appreciative.
+      Keep it under 300 characters. Use 1-2 emojis max. Personalize with {GF_NAME}.
+      Be culturally neutral and avoid clichés.
+    
+    user: |
+      Create a good night message for {GF_NAME}. Include:
+      - A gentle wrap-up
+      - An appreciation line
+      - A calm wish
+      Make it soothing and loving.
