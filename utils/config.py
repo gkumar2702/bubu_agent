@@ -24,7 +24,7 @@ class Settings(BaseSettings):
     hf_model_id: str = Field(default="Qwen/Qwen2.5-7B-Instruct", description="Hugging Face model ID")
     
     # WhatsApp provider settings
-    whatsapp_provider: str = Field(default="twilio", description="WhatsApp provider (twilio/meta)")
+    whatsapp_provider: str = Field(default="twilio", description="WhatsApp provider (twilio/meta/ultramsg)")
     
     # Twilio settings
     twilio_account_sid: Optional[str] = Field(None, description="Twilio account SID")
@@ -34,6 +34,10 @@ class Settings(BaseSettings):
     # Meta settings
     meta_access_token: Optional[str] = Field(None, description="Meta access token")
     meta_phone_number_id: Optional[str] = Field(None, description="Meta phone number ID")
+    
+    # Ultramsg settings
+    ultramsg_api_key: Optional[str] = Field(None, description="Ultramsg API key")
+    ultramsg_instance_id: Optional[str] = Field(None, description="Ultramsg instance ID")
     
     # Timezone and scheduling
     timezone: str = Field(default="Asia/Kolkata", description="Timezone for scheduling")
@@ -51,8 +55,8 @@ class Settings(BaseSettings):
     @field_validator('whatsapp_provider')
     @classmethod
     def validate_whatsapp_provider(cls, v):
-        if v not in ['twilio', 'meta']:
-            raise ValueError('whatsapp_provider must be either "twilio" or "meta"')
+        if v not in ['twilio', 'meta', 'ultramsg']:
+            raise ValueError('whatsapp_provider must be either "twilio", "meta", or "ultramsg"')
         return v
     
     @field_validator('daily_flirty_tone')
