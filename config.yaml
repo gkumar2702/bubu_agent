@@ -3,9 +3,9 @@
 
 # General settings
 general:
-  max_message_length: 500  # Increased from 300 to 500
+  max_message_length: 700  # Increased from 300 to 500
   allow_emojis: true
-  max_emojis: 4  # Increased from 3 to 4
+  max_emojis: 5  # Increased from 3 to 4
   enable_safety_filters: true
   enable_content_policy: true
   enable_bollywood_quotes: true  # New feature for Bollywood dialogues
@@ -13,21 +13,21 @@ general:
 
 # Message tone settings
 tone:
-  daily_flirty_tone: "playful"  # Options: playful, romantic, witty
+  daily_flirty_tone: "romantic"  # Options: playful, romantic, witty
   overall_style: "warm"  # Options: warm, sweet, caring
   cultural_neutrality: true
 
 # Signature closers (rotating)
 signature_closers:
-  - "— your bubu"
-  - "— bubu ❤️"
+  - "— your bubu gourav"
+  - "— bubu gourav ❤️"
   - "— your love"
-  - "— bubu 💕"
-  - "— with love, bubu"
-  - "— forever yours, bubu"
-  - "— missing you, bubu"
+  - "— bubu gourav 💕"
+  - "— with love, bubu gourav"
+  - "— forever yours, bubu gourav"
+  - "— missing you, bubu gourav"
   - "— your forever love"
-  - "— bubu 💖"
+  - "— bubu gourav 💖"
   - "— your soulmate"
 
 # Bollywood romantic dialogues (for inspiration and style)
