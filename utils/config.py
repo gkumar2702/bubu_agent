@@ -154,6 +154,16 @@ class ConfigManager:
     def get_tone_setting(self, key: str, default: Any = None) -> Any:
         """Get tone setting."""
         return self.get(f'tone.{key}', default)
+    
+    def get_bollywood_quotes(self) -> List[str]:
+        """Get Bollywood romantic quotes."""
+        quotes = self.get('bollywood_quotes', [])
+        return quotes if isinstance(quotes, list) else []
+    
+    def get_cheesy_lines(self) -> List[str]:
+        """Get cheesy romantic lines."""
+        lines = self.get('cheesy_lines', [])
+        return lines if isinstance(lines, list) else []
 
 
 # Global configuration instance

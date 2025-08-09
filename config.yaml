@@ -3,11 +3,13 @@
 
 # General settings
 general:
-  max_message_length: 300
+  max_message_length: 500  # Increased from 300 to 500
   allow_emojis: true
-  max_emojis: 3
+  max_emojis: 4  # Increased from 3 to 4
   enable_safety_filters: true
   enable_content_policy: true
+  enable_bollywood_quotes: true  # New feature for Bollywood dialogues
+  enable_cheesy_lines: true  # New feature for cheesy romantic lines
 
 # Message tone settings
 tone:
@@ -22,44 +24,75 @@ signature_closers:
   - "— your love"
   - "— bubu 💕"
   - "— with love, bubu"
+  - "— forever yours, bubu"
+  - "— missing you, bubu"
+  - "— your forever love"
+  - "— bubu 💖"
+  - "— your soulmate"
+
+# Bollywood romantic dialogues (for inspiration and style)
+bollywood_quotes:
+  - "Tumhare liye main kuch bhi kar sakta hun... bas tum khush raho"
+  - "Mere liye tum sabse upar ho, sabse aage ho"
+  - "Tumhari muskaan meri duniya hai"
+  - "Main tumhare bina jeena nahi chahta"
+  - "Tum meri zindagi ka sabse khoobsurat hissa ho"
+  - "Mere liye tum perfect ho"
+  - "Tumhari aankhon mein meri duniya basi hai"
+  - "Main tumhare liye chaand bhi tod launga"
+  - "Tumhari yaad mein main pagal ho jata hun"
+  - "Mere liye tum sab kuch ho"
+
+# Cheesy romantic lines (for fun and variety)
+cheesy_lines:
+  - "You're the WiFi to my heart - I can't connect without you! 📶💕"
+  - "Are you a parking ticket? Because you've got FINE written all over you! 🚗💖"
+  - "Are you a magician? Because whenever I look at you, everyone else disappears! ✨👀"
+  - "Do you have a map? I keep getting lost in your eyes! 🗺️👁️"
+  - "Are you made of copper and tellurium? Because you're Cu-Te! 🧪💕"
+  - "Do you like science? Because we have chemistry! 🔬💕"
+  - "Are you a camera? Because every time I look at you, I smile! 📸😊"
+  - "Do you have a Band-Aid? Because I just scraped my knee falling for you! 🩹💕"
+  - "Are you a time traveler? Because I can see you in my future! ⏰🔮"
+  - "Do you like camping? Because I'd love to pitch a tent with you! ⛺💕"
 
 # Fallback templates for each message type
 fallback_templates:
   morning:
-    - "Good morning {GF_NAME}! 🌅 Wishing you a beautiful day filled with joy and success. {closer}"
-    - "Morning {GF_NAME}! ☀️ May your day be as wonderful as you are. {closer}"
-    - "Good morning {GF_NAME}! 🌞 Here's to a day full of possibilities and smiles. {closer}"
-    - "Rise and shine {GF_NAME}! ✨ You've got this day in the bag. {closer}"
-    - "Good morning {GF_NAME}! 🌅 Your positive energy will light up the world today. {closer}"
-    - "Morning {GF_NAME}! ☀️ Every new day is a fresh start - make it count! {closer}"
-    - "Good morning {GF_NAME}! 🌞 You're capable of amazing things today. {closer}"
-    - "Rise and shine {GF_NAME}! ✨ Your strength inspires everyone around you. {closer}"
-    - "Good morning {GF_NAME}! 🌅 Today is your day to shine bright. {closer}"
-    - "Morning {GF_NAME}! ☀️ You bring so much joy to the world. {closer}"
+    - "Good morning {GF_NAME}! 🌅 Wishing you a beautiful day filled with joy, success, and endless possibilities. Remember, you have the power to make today amazing - your smile alone can brighten someone's entire day! {closer}"
+    - "Morning {GF_NAME}! ☀️ May your day be as wonderful and extraordinary as you are. You're not just starting a new day, you're creating a new chapter in your beautiful story. Let's make it count! {closer}"
+    - "Good morning {GF_NAME}! 🌞 Here's to a day full of possibilities, smiles, and moments that take your breath away. You're the kind of person who makes ordinary days feel magical. {closer}"
+    - "Rise and shine {GF_NAME}! ✨ You've got this day in the bag, and I know you'll handle everything with the grace and strength that makes you so special. Your determination is truly inspiring! {closer}"
+    - "Good morning {GF_NAME}! 🌅 Your positive energy will light up the world today, just like you light up my world every single day. You're a force of nature, beautiful and unstoppable! {closer}"
+    - "Morning {GF_NAME}! ☀️ Every new day is a fresh start - make it count! You have the power to turn dreams into reality and challenges into opportunities. I believe in you completely! {closer}"
+    - "Good morning {GF_NAME}! 🌞 You're capable of amazing things today, and I can't wait to see all the wonderful ways you'll make the world a better place. Your kindness knows no bounds! {closer}"
+    - "Rise and shine {GF_NAME}! ✨ Your strength inspires everyone around you, and your courage in facing each day with such grace is absolutely remarkable. You're my hero! {closer}"
+    - "Good morning {GF_NAME}! 🌅 Today is your day to shine bright, and I know you'll do it with the same brilliance that makes you so unique and special. You're absolutely incredible! {closer}"
+    - "Morning {GF_NAME}! ☀️ You bring so much joy to the world, and I'm so grateful to be part of your journey. Your laughter is contagious, your smile is healing, and your love is everything! {closer}"
 
   flirty:
-    - "Hey {GF_NAME}! 😊 Just thinking about your beautiful smile and how it brightens my day. {closer}"
-    - "Hi {GF_NAME}! 💕 Your laugh is absolutely contagious - I can't help but smile thinking about it. {closer}"
-    - "Hey there {GF_NAME}! 😍 You're the highlight of my day, every day. {closer}"
-    - "Hi {GF_NAME}! 💖 Just wanted to remind you how amazing you are. {closer}"
-    - "Hey {GF_NAME}! 😊 Your positive energy is absolutely magnetic. {closer}"
-    - "Hi {GF_NAME}! 💕 You make every day feel like a special occasion. {closer}"
-    - "Hey there {GF_NAME}! 😍 Your kindness and warmth light up any room. {closer}"
-    - "Hi {GF_NAME}! 💖 You're the most beautiful person I know, inside and out. {closer}"
-    - "Hey {GF_NAME}! 😊 Just thinking about how lucky I am to have you. {closer}"
-    - "Hi {GF_NAME}! 💕 Your presence makes everything better. {closer}"
+    - "Hey {GF_NAME}! 😊 Just thinking about your beautiful smile and how it brightens my day. You're like sunshine on a cloudy day - impossible to ignore and absolutely mesmerizing! {closer}"
+    - "Hi {GF_NAME}! 💕 Your laugh is absolutely contagious - I can't help but smile thinking about it. It's the kind of sound that makes my heart skip a beat and my world feel complete! {closer}"
+    - "Hey there {GF_NAME}! 😍 You're the highlight of my day, every day. Just the thought of you makes my heart race and my day instantly better. You're my favorite person in the whole world! {closer}"
+    - "Hi {GF_NAME}! 💖 Just wanted to remind you how amazing you are. You're not just beautiful, you're absolutely breathtaking - inside and out. You make my world complete! {closer}"
+    - "Hey {GF_NAME}! 😊 Your positive energy is absolutely magnetic. I'm drawn to you like a moth to a flame, and I never want to be anywhere else. You're my everything! {closer}"
+    - "Hi {GF_NAME}! 💕 You make every day feel like a special occasion. With you, even the most ordinary moments become extraordinary memories. You're my perfect match! {closer}"
+    - "Hey there {GF_NAME}! 😍 Your kindness and warmth light up any room. You're like a walking ray of sunshine, and I'm so lucky to be the one who gets to bask in your glow! {closer}"
+    - "Hi {GF_NAME}! 💖 You're the most beautiful person I know, inside and out. Your heart is pure gold, and your soul is absolutely radiant. I'm completely smitten! {closer}"
+    - "Hey {GF_NAME}! 😊 Just thinking about how lucky I am to have you. You're the missing piece to my puzzle, the answer to my prayers, and the love of my life! {closer}"
+    - "Hi {GF_NAME}! 💕 Your presence makes everything better. You're like magic - you turn ordinary moments into extraordinary memories and make my heart sing with joy! {closer}"
 
   night:
-    - "Good night {GF_NAME}! 🌙 Thank you for being the amazing person you are. Sweet dreams! {closer}"
-    - "Night {GF_NAME}! 🌟 Rest well knowing you're loved and appreciated. {closer}"
-    - "Good night {GF_NAME}! 🌙 May your dreams be as beautiful as you are. {closer}"
-    - "Sweet dreams {GF_NAME}! 🌟 Thank you for another wonderful day. {closer}"
-    - "Good night {GF_NAME}! 🌙 You deserve all the peaceful rest in the world. {closer}"
-    - "Night {GF_NAME}! 🌟 Sleep tight, knowing you're cherished. {closer}"
-    - "Good night {GF_NAME}! 🌙 Your kindness makes the world a better place. {closer}"
-    - "Sweet dreams {GF_NAME}! 🌟 You're the best thing that's ever happened to me. {closer}"
-    - "Good night {GF_NAME}! 🌙 Rest peacefully, beautiful soul. {closer}"
-    - "Night {GF_NAME}! 🌟 Thank you for being you - perfect just as you are. {closer}"
+    - "Good night {GF_NAME}! 🌙 Thank you for being the amazing person you are. Sweet dreams filled with love, joy, and all the beautiful things you deserve. You make my world complete! {closer}"
+    - "Night {GF_NAME}! 🌟 Rest well knowing you're loved and appreciated beyond measure. Your presence in my life is the greatest gift I've ever received. Sleep peacefully, my love! {closer}"
+    - "Good night {GF_NAME}! 🌙 May your dreams be as beautiful and extraordinary as you are. You deserve all the happiness, love, and wonderful things that life has to offer. Sweet dreams! {closer}"
+    - "Sweet dreams {GF_NAME}! 🌟 Thank you for another wonderful day filled with your love and laughter. You're the reason my life feels complete and my heart feels full. Rest well, beautiful! {closer}"
+    - "Good night {GF_NAME}! 🌙 You deserve all the peaceful rest in the world, and so much more. Your kindness, love, and beautiful spirit make every day worth living. Sleep tight, my everything! {closer}"
+    - "Night {GF_NAME}! 🌟 Sleep tight, knowing you're cherished, adored, and loved beyond words. You're not just my love, you're my soulmate, my best friend, and my everything! {closer}"
+    - "Good night {GF_NAME}! 🌙 Your kindness makes the world a better place, and your love makes my world complete. You're the most beautiful person I know, inside and out. Sweet dreams! {closer}"
+    - "Sweet dreams {GF_NAME}! 🌟 You're the best thing that's ever happened to me, and I'm so grateful for every moment we share. You make my life feel like a beautiful dream come true! {closer}"
+    - "Good night {GF_NAME}! 🌙 Rest peacefully, beautiful soul. Your love is the light that guides me through every day, and your presence is the greatest blessing in my life. Sleep well! {closer}"
+    - "Night {GF_NAME}! 🌟 Thank you for being you - perfect just as you are. You're my everything, my forever love, and the reason my heart beats with joy. Sweet dreams, my love! {closer}"
 
 # Content policy settings
 content_policy:
@@ -89,39 +122,45 @@ huggingface:
 prompt_templates:
   morning:
     system: |
-      You are a loving partner sending a good morning message. Be warm, sweet, and include a short motivational line.
-      Keep it under 300 characters. Use 1-2 emojis max. Personalize with {GF_NAME}.
-      Be culturally neutral and avoid clichés.
+      You are a loving partner sending a good morning message. Be warm, sweet, and include a motivational line.
+      Keep it under 500 characters. Use 2-4 emojis. Personalize with {GF_NAME}.
+      Feel free to include Bollywood-style romantic expressions or cheesy lines for fun.
+      Be culturally inclusive and make it memorable.
     
     user: |
       Create a good morning message for {GF_NAME}. Include:
-      - A sweet greeting
-      - A short motivational line (one sentence)
-      - A warm sign-off
-      Make it personal and uplifting.
+      - A sweet and engaging greeting
+      - A motivational line that inspires
+      - A romantic or cheesy element (optional)
+      - A warm and loving sign-off
+      Make it personal, uplifting, and memorable. Feel free to be romantic and cheesy!
 
   flirty:
     system: |
       You are a loving partner sending a playful, flirty message. Be respectful and fun.
-      Keep it under 300 characters. Use 1-2 emojis max. Personalize with {GF_NAME}.
-      Tone: {DAILY_FLIRTY_TONE}. Be culturally neutral and avoid clichés.
+      Keep it under 500 characters. Use 2-4 emojis. Personalize with {GF_NAME}.
+      Tone: {DAILY_FLIRTY_TONE}. Feel free to include Bollywood-style romantic expressions or cheesy pickup lines.
+      Be culturally inclusive and make it memorable.
     
     user: |
       Create a {DAILY_FLIRTY_TONE} flirty message for {GF_NAME}. Include:
-      - A playful hook
+      - A playful and engaging hook
       - A unique personal compliment
-      - A short imaginative scenario (1 line)
-      Make it fun and respectful.
+      - A romantic or cheesy element (optional)
+      - A short imaginative scenario
+      Make it fun, respectful, and memorable. Feel free to be romantic and cheesy!
 
   night:
     system: |
       You are a loving partner sending a good night message. Be gentle, calming, and appreciative.
-      Keep it under 300 characters. Use 1-2 emojis max. Personalize with {GF_NAME}.
-      Be culturally neutral and avoid clichés.
+      Keep it under 500 characters. Use 2-4 emojis. Personalize with {GF_NAME}.
+      Feel free to include Bollywood-style romantic expressions or cheesy lines for fun.
+      Be culturally inclusive and make it memorable.
     
     user: |
       Create a good night message for {GF_NAME}. Include:
-      - A gentle wrap-up
+      - A gentle and loving wrap-up
       - An appreciation line
-      - A calm wish
-      Make it soothing and loving.
+      - A romantic or cheesy element (optional)
+      - A calm and soothing wish
+      Make it soothing, loving, and memorable. Feel free to be romantic and cheesy!

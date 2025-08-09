@@ -113,6 +113,10 @@ class MessageComposer:
                 )
                 return None
             
+            # Get Bollywood quote and cheesy line for inspiration
+            bollywood_quote = self._get_bollywood_quote(date_obj)
+            cheesy_line = self._get_cheesy_line(date_obj)
+            
             # Replace placeholders
             replacements = {
                 "GF_NAME": config.settings.gf_name,
@@ -123,6 +127,15 @@ class MessageComposer:
             for key, value in replacements.items():
                 system_prompt = system_prompt.replace(f"{{{key}}}", value)
                 user_prompt = user_prompt.replace(f"{{{key}}}", value)
+            
+            # Add Bollywood and cheesy inspiration to prompts
+            if bollywood_quote:
+                system_prompt += f"\n\nBollywood inspiration: '{bollywood_quote}'"
+                user_prompt += f"\n\nFeel free to use the romantic style of this Bollywood quote as inspiration."
+            
+            if cheesy_line:
+                system_prompt += f"\n\nCheesy line example: '{cheesy_line}'"
+                user_prompt += f"\n\nYou can include cheesy romantic elements like this example for fun."
             
             # Get generation parameters
             max_tokens = config.get_hf_setting("max_new_tokens", 150)
@@ -174,10 +187,24 @@ class MessageComposer:
         rng = SeededRandom(seed)
         
         template = rng.choice(templates)
-        return template.format(
+        message = template.format(
             GF_NAME=config.settings.gf_name,
             closer=closer
         )
+        
+        # Occasionally add Bollywood quote or cheesy line (20% chance)
+        if rng.random() < 0.2:
+            bollywood_quote = self._get_bollywood_quote(date.today())
+            cheesy_line = self._get_cheesy_line(date.today())
+            
+            if bollywood_quote and rng.random() < 0.5:
+                # Add Bollywood quote before the closer
+                message = message.replace(closer, f" 💕 '{bollywood_quote}' {closer}")
+            elif cheesy_line:
+                # Add cheesy line before the closer
+                message = message.replace(closer, f" {cheesy_line} {closer}")
+        
+        return message
     
     def _get_signature_closer(self, date_obj: date) -> str:
         """Get a signature closer for the date."""
@@ -191,6 +218,32 @@ class MessageComposer:
         rng = SeededRandom(seed)
         
         return rng.choice(closers)
+    
+    def _get_bollywood_quote(self, date_obj: date) -> Optional[str]:
+        """Get a random Bollywood quote for inspiration."""
+        quotes = config.get_bollywood_quotes()
+        
+        if not quotes:
+            return None
+        
+        # Use seeded random for consistent selection per day
+        seed = get_date_seed(date_obj)
+        rng = SeededRandom(seed)
+        
+        return rng.choice(quotes)
+    
+    def _get_cheesy_line(self, date_obj: date) -> Optional[str]:
+        """Get a random cheesy line for fun."""
+        lines = config.get_cheesy_lines()
+        
+        if not lines:
+            return None
+        
+        # Use seeded random for consistent selection per day
+        seed = get_date_seed(date_obj)
+        rng = SeededRandom(seed)
+        
+        return rng.choice(lines)
     
     def _clean_generated_text(self, text: str, closer: str) -> str:
         """Clean and format generated text."""
