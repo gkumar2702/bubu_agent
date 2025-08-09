@@ -15,6 +15,7 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 ## Features
 
 - **Smart Scheduling**: 3 messages per day at randomized times within specified windows
+- **Startup Send Behavior**: Automatically sends messages if app starts during an active window
 - **AI-Powered Messages**: Uses Hugging Face models for personalized content generation
 - **Fallback System**: Template-based fallback when AI generation fails
 - **Multiple WhatsApp Providers**: Support for Meta WhatsApp Cloud API (FREE), Ultramsg, and Twilio
@@ -36,13 +37,17 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 - **Idempotency**: Active protection against duplicate sends
 - **API Endpoints**: All endpoints functional
 - **Error Handling**: Comprehensive error management
+- **Startup Send Behavior**: New feature - sends immediately if app starts during active window
+- **Pythonic Code**: Refactored with better typing, f-strings, and cleaner structure
 
 **📊 Recent Updates:**
+- ✅ Added startup send behavior - sends immediately if app starts during active window
+- ✅ Refactored scheduler with Pythonic improvements (better typing, f-strings, helper methods)
+- ✅ Reorganized documentation into `readme/` folder for better structure
+- ✅ Enhanced error handling and logging with more descriptive messages
 - ✅ Added comprehensive Ultramsg support
 - ✅ Fixed configuration validation errors
 - ✅ Enhanced interactive sender functionality
-- ✅ Improved error handling and logging
-- ✅ Added detailed setup guides for all providers
 
 ## Message Schedule
 
@@ -52,13 +57,22 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 
 Each time includes ±20 minutes of randomization and respects do-not-disturb hours (23:45–06:30).
 
+### 🆕 Startup Send Behavior
+
+**New Feature**: If the app starts during an active message window and the message hasn't been sent today, it will send immediately! This ensures no missed opportunities for romance. 💕
+
+**Example Scenarios:**
+- App starts at 07:10 during morning window (06:45-09:30) → sends morning message immediately
+- App starts at 18:00 (outside all windows) → waits for next scheduled time
+- App restarts during same window → respects idempotency, no duplicate sends
+
 ## 🚀 Quick Start
 
 ### 📋 Setup Checklist
 
 Before you begin, make sure you have:
 - [ ] Python 3.11+ installed
-- [ ] A Twilio account (free tier available)
+- [ ] A WhatsApp API provider account (Meta/Ultramsg recommended - FREE)
 - [ ] A Hugging Face account (free tier available)
 - [ ] Your girlfriend's WhatsApp number
 - [ ] Her consent to receive automated messages
@@ -198,8 +212,6 @@ curl http://localhost:8000/healthz
 # View today's plan
 curl http://localhost:8000/plan/today
 
-# Dry run (preview messages)
-curl http://localhost:8000/dry-run
 ```
 
 ### 7. Test Your Setup
@@ -981,11 +993,17 @@ bubu_agent/
 ├── app.py                 # FastAPI application
 ├── requirements.txt       # Python dependencies
 ├── config.yaml           # Message templates and settings
+├── readme/               # 📁 Documentation folder
+│   ├── ULTRAMSG_SETUP_GUIDE.md
+│   ├── FREE_WHATSAPP_APIS.md
+│   ├── INTERACTIVE_README.md
+│   └── DEPLOYMENT.md
 ├── setup/
 │   ├── env.example       # Environment variables template
 │   ├── env.meta.example  # Meta WhatsApp configuration
 │   ├── generate_token.py # API token generator
 │   ├── switch_to_meta.py # Switch to Meta WhatsApp
+│   ├── switch_to_ultramsg.py # Switch to Ultramsg WhatsApp
 │   ├── setup.sh          # Automated setup (macOS/Linux)
 │   └── setup.bat         # Automated setup (Windows)
 ├── providers/
@@ -997,29 +1015,41 @@ bubu_agent/
 ├── utils/
 │   ├── config.py         # Configuration management
 │   ├── compose.py        # Message composition
-│   ├── scheduler.py      # Message scheduling
+│   ├── scheduler.py      # Message scheduling (with startup send behavior)
 │   ├── storage.py        # Database operations
-│   └── utils.py          # Utility functions
+│   ├── utils.py          # Utility functions
+│   └── README.md         # Module-specific documentation
 ├── tests/                # Unit tests
 ├── interactive_sender.py # Interactive message sender
-├── INTERACTIVE_README.md # Interactive sender documentation
-├── FREE_WHATSAPP_APIS.md # Free WhatsApp APIs guide
+├── docker-compose.yml    # Docker configuration
+├── Dockerfile           # Docker image definition
 └── README.md            # This file
 ```
 
 ## 🆕 New Features
 
+### 🚀 Startup Send Behavior
+- **Immediate Sending**: If app starts during an active message window, sends immediately
+- **Smart Waiting**: After startup send, awaits next eligible send time
+- **Idempotency**: Prevents duplicate sends if restarted during same window
+- **Edge Case Handling**: Gracefully handles overlapping windows and DND rules
+
 ### Interactive Message Sender
 - **`interactive_sender.py`**: Beautiful CLI interface to preview and send messages
-- **`INTERACTIVE_README.md`**: Complete documentation for the interactive sender
+- **`readme/INTERACTIVE_README.md`**: Complete documentation for the interactive sender
 
 ### Free WhatsApp API Support
-- **`FREE_WHATSAPP_APIS.md`**: Comprehensive guide for free WhatsApp APIs
-- **`ULTRAMSG_SETUP_GUIDE.md`**: Complete Ultramsg setup guide
+- **`readme/FREE_WHATSAPP_APIS.md`**: Comprehensive guide for free WhatsApp APIs
+- **`readme/ULTRAMSG_SETUP_GUIDE.md`**: Complete Ultramsg setup guide
 - **`setup/switch_to_meta.py`**: Script to migrate from Twilio to Meta WhatsApp
 - **`setup/switch_to_ultramsg.py`**: Script to migrate to Ultramsg WhatsApp
 - **`providers/ultramsg_whatsapp.py`**: Ultramsg API provider implementation
 - **`setup/env.meta.example`**: Meta WhatsApp configuration template
+
+### 📚 Documentation Organization
+- **`readme/` folder**: All documentation files organized in one place
+- **Better structure**: Easier to find and navigate documentation
+- **Cleaner root**: Main README focuses on essential information
 
 ---
 
