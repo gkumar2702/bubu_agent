@@ -4,9 +4,9 @@ import random
 from datetime import date
 from typing import List, Optional, Tuple
 
-from config import config
+from .config import config
 from providers.huggingface_llm import HuggingFaceLLM
-from utils import (
+from .utils import (
     SeededRandom, count_emojis, get_date_seed, get_logger,
     truncate_text, validate_message_content
 )
@@ -236,6 +236,25 @@ class MessageComposer:
     ) -> str:
         """Get a preview of a message without sending."""
         try:
+            options = options or {}
+            
+            # Handle randomization
+            if options.get("randomize") and options.get("seed") is not None:
+                # Use the provided seed for consistent randomization
+                seed = options["seed"]
+                rng = SeededRandom(seed)
+                
+                # Get fallback templates and pick one randomly
+                templates = config.get_fallback_templates(message_type)
+                if templates:
+                    template = rng.choice(templates)
+                    closer = rng.choice(config.get_signature_closers() or ["— bubu"])
+                    return template.format(
+                        GF_NAME=config.settings.gf_name,
+                        closer=closer
+                    )
+            
+            # Default behavior
             closer = self._get_signature_closer(date.today())
             
             if options and options.get("use_fallback", False):
@@ -252,6 +271,18 @@ class MessageComposer:
                 error=str(e)
             )
             return f"Error generating preview for {message_type} message"
+    
+    def get_fallback_templates(self, message_type: str) -> List[str]:
+        """Get fallback templates for a message type."""
+        try:
+            return config.get_fallback_templates(message_type)
+        except Exception as e:
+            logger.error(
+                "Error getting fallback templates",
+                message_type=message_type,
+                error=str(e)
+            )
+            return []
 
 
 def create_message_composer() -> MessageComposer:

@@ -4,7 +4,7 @@ import pytest
 from datetime import date, datetime, time
 from unittest.mock import AsyncMock, MagicMock, patch
 
-from scheduler import MessageScheduler
+from utils import MessageScheduler
 
 
 class TestMessageScheduler:
@@ -13,7 +13,7 @@ class TestMessageScheduler:
     @pytest.fixture
     def mock_config(self):
         """Create mock configuration."""
-        with patch('scheduler.config') as mock_config:
+        with patch('utils.config') as mock_config:
             mock_config.settings.enabled = True
             mock_config.settings.whatsapp_provider = "twilio"
             mock_config.settings.twilio_account_sid = "test_sid"
@@ -52,9 +52,9 @@ class TestMessageScheduler:
     @pytest.fixture
     def scheduler(self, mock_config, mock_messenger, mock_composer, mock_storage):
         """Create scheduler with mocks."""
-        with patch('scheduler.TwilioWhatsApp', return_value=mock_messenger), \
-             patch('scheduler.create_message_composer', return_value=mock_composer), \
-             patch('scheduler.Storage', return_value=mock_storage):
+        with patch('providers.TwilioWhatsApp', return_value=mock_messenger), \
+             patch('utils.create_message_composer', return_value=mock_composer), \
+             patch('utils.Storage', return_value=mock_storage):
             
             scheduler = MessageScheduler()
             scheduler.messenger = mock_messenger

@@ -33,13 +33,12 @@ jobs:
       run: |
         source venv/bin/activate
         pip install --upgrade pip
-        pip install -e .
-        pip install -e ".[dev]"
+        pip install -r requirements.txt
 
     - name: Create test environment file
       run: |
         source venv/bin/activate
-        cp env.example .env
+        cp setup/env.example .env
         # Set test values for required environment variables
         sed -i 's/GF_NAME=YourGirlfriendName/GF_NAME=TestGirlfriend/g' .env
         sed -i 's/GF_WHATSAPP_NUMBER=+1234567890/GF_WHATSAPP_NUMBER=+1234567890/g' .env
@@ -97,13 +96,12 @@ jobs:
       run: |
         source venv/bin/activate
         pip install --upgrade pip
-        pip install -e .
-        pip install -e ".[dev]"
+        pip install -r requirements.txt
 
     - name: Setup test environment
       run: |
         source venv/bin/activate
-        cp env.example .env
+        cp setup/env.example .env
         # Configure test environment
         sed -i 's/GF_NAME=YourGirlfriendName/GF_NAME=TestGirlfriend/g' .env
         sed -i 's/GF_WHATSAPP_NUMBER=+1234567890/GF_WHATSAPP_NUMBER=+1234567890/g' .env

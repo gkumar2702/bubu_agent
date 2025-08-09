@@ -4,7 +4,7 @@ import pytest
 from datetime import date
 from unittest.mock import AsyncMock, MagicMock
 
-from compose import MessageComposer
+from utils import MessageComposer
 from providers.huggingface_llm import HuggingFaceLLM
 
 

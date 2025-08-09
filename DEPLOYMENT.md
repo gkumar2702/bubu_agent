@@ -45,11 +45,8 @@ venv\Scripts\activate
 ### 2. Install Dependencies
 
 ```bash
-# Install in development mode
-pip install -e .
-
-# Install development dependencies
-pip install -e ".[dev]"
+# Install dependencies
+pip install -r requirements.txt
 ```
 
 ### 3. Configuration

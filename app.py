@@ -2,17 +2,20 @@
 
 import asyncio
 from datetime import date
-from typing import Dict, List, Optional
+from typing import Dict, List, Optional, Any
 
 from fastapi import FastAPI, HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
-from compose import create_message_composer
-from config import config
-from scheduler import scheduler
-from storage import Storage
-from utils import get_logger, setup_logging
+from utils import (
+    create_message_composer,
+    config,
+    MessageScheduler,
+    Storage,
+    get_logger,
+    setup_logging
+)
 
 # Setup logging
 setup_logging(config.settings.log_level)
@@ -28,6 +31,9 @@ app = FastAPI(
 # Security
 security = HTTPBearer()
 
+# Create scheduler instance
+scheduler = MessageScheduler()
+
 
 class MessagePreviewRequest(BaseModel):
     """Request model for message preview."""
@@ -37,19 +43,22 @@ class MessagePreviewRequest(BaseModel):
 
 class MessagePreviewResponse(BaseModel):
     """Response model for message preview."""
-    message: str
+    messages: List[Dict[str, Any]]
     type: str
 
 
 class SendNowRequest(BaseModel):
     """Request model for sending message now."""
     type: str
+    message: Optional[str] = None
 
 
 class SendNowResponse(BaseModel):
     """Response model for send now."""
     success: bool
     message: str
+    provider: Optional[str] = None
+    message_id: Optional[str] = None
 
 
 class HealthResponse(BaseModel):
@@ -156,7 +165,7 @@ async def preview_message(
     request: MessagePreviewRequest,
     _: bool = Depends(verify_token)
 ):
-    """Preview a message without sending."""
+    """Preview messages without sending."""
     try:
         if request.type not in ["morning", "flirty", "night"]:
             raise HTTPException(
@@ -165,19 +174,51 @@ async def preview_message(
             )
         
         composer = create_message_composer()
-        message = composer.get_message_preview(request.type, request.options)
+        options = request.options or {}
+        count = options.get("count", 1)
+        include_fallback = options.get("include_fallback", False)
+        randomize = options.get("randomize", False)
+        
+        messages = []
+        
+        # Generate multiple messages
+        for i in range(count):
+            try:
+                message = composer.get_message_preview(request.type, {
+                    "randomize": randomize,
+                    "seed": i if randomize else None
+                })
+                
+                messages.append({
+                    "text": message,
+                    "index": i + 1,
+                    "is_fallback": False
+                })
+            except Exception as e:
+                logger.warning(f"Failed to generate message {i+1}", error=str(e))
+                continue
+        
+        # Add fallback templates if requested
+        if include_fallback:
+            fallback_templates = composer.get_fallback_templates(request.type)
+            for i, template in enumerate(fallback_templates[:3]):  # Limit to 3 fallbacks
+                messages.append({
+                    "text": template,
+                    "index": len(messages) + 1,
+                    "is_fallback": True
+                })
         
         return MessagePreviewResponse(
-            message=message,
+            messages=messages,
             type=request.type
         )
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("Failed to preview message", error=str(e))
+        logger.error("Failed to preview messages", error=str(e))
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="Failed to preview message"
+            detail="Failed to preview messages"
         )
 
 
@@ -223,11 +264,18 @@ async def send_message_now(
                 detail="Invalid message type. Must be one of: morning, flirty, night"
             )
         
-        success, message = await scheduler.send_message_now(request.type)
+        if request.message:
+            # Send custom message
+            success, result_message, provider_info = await scheduler.send_custom_message(request.type, request.message)
+        else:
+            # Generate and send message
+            success, result_message, provider_info = await scheduler.send_message_now(request.type)
         
         return SendNowResponse(
             success=success,
-            message=message
+            message=result_message,
+            provider=provider_info.get("provider") if provider_info else None,
+            message_id=provider_info.get("message_id") if provider_info else None
         )
     except HTTPException:
         raise

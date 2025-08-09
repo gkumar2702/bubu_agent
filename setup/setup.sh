@@ -37,13 +37,12 @@ pip install --upgrade pip
 
 # Install dependencies
 echo "📚 Installing dependencies..."
-pip install -e .
-pip install -e ".[dev]"
+pip install -r requirements.txt
 
 # Create environment file if it doesn't exist
 if [ ! -f ".env" ]; then
     echo "📝 Creating .env file from template..."
-    cp env.example .env
+    cp setup/env.example .env
     echo "✅ .env file created"
     echo "⚠️  Please edit .env file with your configuration values"
 else

@@ -13,8 +13,7 @@ help:
 
 # Install dependencies
 install:
-	pip install -e .
-	pip install -e ".[dev]"
+	pip install -r requirements.txt
 
 # Run the application
 run:
@@ -65,7 +64,7 @@ venv:
 # Development setup
 dev-setup: venv install
 	@echo "Setting up development environment..."
-	@if [ ! -f .env ]; then cp env.example .env; echo "Created .env from env.example"; fi
+	@if [ ! -f .env ]; then cp setup/env.example .env; echo "Created .env from env.example"; fi
 	@echo "Please edit .env with your configuration values"
 	@echo "Activate virtual environment with: source venv/bin/activate"
 

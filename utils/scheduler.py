@@ -8,11 +8,11 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from apscheduler.triggers.cron import CronTrigger
 from pytz import timezone
 
-from compose import MessageComposer, create_message_composer
-from config import config
+from .compose import MessageComposer, create_message_composer
+from .config import config
 from providers import TwilioWhatsApp, MetaWhatsApp
-from storage import Storage
-from utils import (
+from .storage import Storage
+from .utils import (
     SeededRandom, get_date_seed, get_logger,
     get_timezone_aware_datetime, is_within_time_window
 )
@@ -277,20 +277,20 @@ class MessageScheduler:
                 provider_id=None
             )
     
-    async def send_message_now(self, message_type: str) -> Tuple[bool, str]:
+    async def send_message_now(self, message_type: str) -> Tuple[bool, str, Dict[str, str]]:
         """Send a message immediately."""
         try:
             today = date.today()
             
             # Check if already sent
             if self.storage.is_message_sent(today, message_type):
-                return False, "Message already sent today"
+                return False, "Message already sent today", {}
             
             # Compose and send
             message, status = await self.composer.compose_message(message_type, today)
             
             if not message:
-                return False, f"No message composed (status: {status})"
+                return False, f"No message composed (status: {status})", {}
             
             provider_id = await self.messenger.send_text(
                 config.settings.gf_whatsapp_number,
@@ -306,7 +306,12 @@ class MessageScheduler:
                 provider_id=provider_id
             )
             
-            return True, "Message sent successfully"
+            provider_info = {
+                "provider": config.settings.whatsapp_provider,
+                "message_id": provider_id
+            }
+            
+            return True, "Message sent successfully", provider_info
             
         except Exception as e:
             logger.error(
@@ -314,7 +319,49 @@ class MessageScheduler:
                 type=message_type,
                 error=str(e)
             )
-            return False, f"Error: {str(e)}"
+            return False, f"Error: {str(e)}", {}
+    
+    async def send_custom_message(self, message_type: str, custom_message: str) -> Tuple[bool, str, Dict[str, str]]:
+        """Send a custom message immediately."""
+        try:
+            today = date.today()
+            
+            # Validate message
+            if not custom_message or len(custom_message.strip()) == 0:
+                return False, "Message cannot be empty", {}
+            
+            if len(custom_message) > 300:
+                return False, "Message too long (max 300 characters)", {}
+            
+            # Send the custom message
+            provider_id = await self.messenger.send_text(
+                config.settings.gf_whatsapp_number,
+                custom_message
+            )
+            
+            # Record the message
+            self.storage.record_message_sent(
+                date_obj=today,
+                slot=message_type,
+                text=custom_message,
+                status="sent" if provider_id else "failed",
+                provider_id=provider_id
+            )
+            
+            provider_info = {
+                "provider": config.settings.whatsapp_provider,
+                "message_id": provider_id
+            }
+            
+            return True, "Custom message sent successfully", provider_info
+            
+        except Exception as e:
+            logger.error(
+                "Error sending custom message",
+                type=message_type,
+                error=str(e)
+            )
+            return False, f"Error: {str(e)}", {}
     
     def get_todays_plan(self) -> Dict[str, Optional[str]]:
         """Get today's planned message times."""

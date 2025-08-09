@@ -32,12 +32,46 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 
 Each time includes ±20 minutes of randomization and respects do-not-disturb hours (23:45–06:30).
 
-## Quick Start
+## 🚀 Quick Start
+
+### 📋 Setup Checklist
+
+Before you begin, make sure you have:
+- [ ] Python 3.11+ installed
+- [ ] A Twilio account (free tier available)
+- [ ] A Hugging Face account (free tier available)
+- [ ] Your girlfriend's WhatsApp number
+- [ ] Her consent to receive automated messages
+
+### 🔧 Quick Setup Commands
+
+```bash
+# 1. Clone and setup
+git clone https://github.com/gkumar2702/bubu_agent.git
+cd bubu_agent
+
+# 2. Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
+
+# 3. Install dependencies
+pip install -r requirements.txt
+
+# 4. Generate API token
+python setup/generate_token.py
+
+# 5. Configure environment
+cp setup/env.example .env
+# Edit .env with your settings (see detailed setup guide below)
+
+# 6. Run the service
+uvicorn app:app --host 0.0.0.0 --port 8000
+```
 
 ### Option 1: Automated Setup (Recommended)
 
 **On macOS/Linux:**
-```bash
+90601ca56dd1ca3bc9db7d49fb475574```bash
 git clone https://github.com/gkumar2702/bubu_agent.git
 cd bubu_agent
 ./setup.sh
@@ -95,11 +129,8 @@ pip --version
 ### 3. Install Dependencies
 
 ```bash
-# Install the package in development mode
-pip install -e .
-
-# Install development dependencies
-pip install -e ".[dev]"
+# Install dependencies from requirements.txt
+pip install -r requirements.txt
 
 # Or use the Makefile
 make install
@@ -110,7 +141,7 @@ make install
 Copy the example environment file and configure your settings:
 
 ```bash
-cp env.example .env
+cp setup/env.example .env
 # Edit .env with your configuration
 ```
 
@@ -142,66 +173,334 @@ curl http://localhost:8000/plan/today
 curl http://localhost:8000/dry-run
 ```
 
+### 7. Test Your Setup
+
+#### Test API Authentication
+```bash
+# Test with your bearer token
+curl -H "Authorization: Bearer your_actual_token" http://localhost:8000/healthz
+```
+
+#### Test WhatsApp Integration
+```bash
+# Send a test message (replace with your actual token)
+curl -X POST "http://localhost:8000/send-now" \
+  -H "Authorization: Bearer your_actual_token" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "morning"}'
+```
+
+#### Test Interactive Sender
+```bash
+# Use the interactive script to preview and send messages
+python interactive_sender.py
+```
+
+#### Complete Setup Verification
+```bash
+# 1. Check service health
+curl http://localhost:8000/healthz
+
+# 2. Test authentication
+curl -H "Authorization: Bearer your_token" http://localhost:8000/healthz
+
+# 3. View today's schedule
+curl -H "Authorization: Bearer your_token" http://localhost:8000/plan/today
+
+# 4. Preview messages
+curl -H "Authorization: Bearer your_token" http://localhost:8000/dry-run
+
+# 5. Test interactive sender
+python interactive_sender.py
+
+# 6. Send a test message
+curl -X POST "http://localhost:8000/send-now" \
+  -H "Authorization: Bearer your_token" \
+  -H "Content-Type: application/json" \
+  -d '{"type": "morning"}'
+```
+
+### 8. Common Setup Issues
+
+#### Issue: "Invalid bearer token"
+- ✅ Check that your `API_BEARER_TOKEN` in `.env` matches what you're using in requests
+- ✅ Ensure there are no extra spaces or quotes around the token
+- ✅ Verify the token is at least 32 characters long
+
+#### Issue: "Twilio authentication failed"
+- ✅ Verify your `TWILIO_ACCOUNT_SID` starts with `AC`
+- ✅ Check that your `TWILIO_AUTH_TOKEN` is correct (click "show" in Twilio console)
+- ✅ Ensure your Twilio account is active and has credits
+
+#### Issue: "WhatsApp number not found"
+- ✅ Use E.164 format: `+[country code][number]` (e.g., `+1234567890`)
+- ✅ If using sandbox, ensure the recipient has joined the sandbox
+- ✅ Check that the `TWILIO_WHATSAPP_FROM` includes the `whatsapp:` prefix
+
+#### Issue: "Hugging Face API error"
+- ✅ Verify your `HF_API_KEY` is correct
+- ✅ Check that your Hugging Face account has API access
+- ✅ Ensure the `HF_MODEL_ID` is valid and accessible
+
 ## Configuration
 
 ### Environment Variables (.env)
 
 ```bash
-# Core Settings
+# =============================================================================
+# CORE SETTINGS
+# =============================================================================
+
+# Enable/disable the service
 ENABLED=true
+
+# Your girlfriend's name (used in message personalization)
 GF_NAME=YourGirlfriendName
+
+# Your girlfriend's WhatsApp number (E.164 format: +[country code][number])
 GF_WHATSAPP_NUMBER=+1234567890
+
+# Your WhatsApp number (for testing and logging)
 SENDER_WHATSAPP_NUMBER=+1234567890
 
-# Hugging Face
+# =============================================================================
+# HUGGING FACE AI SETTINGS
+# =============================================================================
+
+# Your Hugging Face API key (get from https://huggingface.co/settings/tokens)
 HF_API_KEY=your_huggingface_api_key
+
+# AI model to use for message generation
 HF_MODEL_ID=Qwen/Qwen2.5-7B-Instruct
 
-# WhatsApp Provider (twilio or meta)
+# =============================================================================
+# WHATSAPP PROVIDER SETTINGS
+# =============================================================================
+
+# Choose your WhatsApp provider: "twilio" or "meta"
 WHATSAPP_PROVIDER=twilio
 
-# Twilio Settings (if using Twilio)
-TWILIO_ACCOUNT_SID=your_account_sid
-TWILIO_AUTH_TOKEN=your_auth_token
-TWILIO_WHATSAPP_FROM=whatsapp:+1234567890
+# =============================================================================
+# TWILIO SETTINGS (if using Twilio)
+# =============================================================================
 
-# Meta Settings (if using Meta)
+# Your Twilio Account SID (starts with "AC")
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+
+# Your Twilio Auth Token (get from Twilio Console)
+TWILIO_AUTH_TOKEN=your_auth_token_here
+
+# Twilio WhatsApp number (include "whatsapp:" prefix)
+# For sandbox: whatsapp:+14155238886
+# For production: whatsapp:+1234567890
+TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+
+# =============================================================================
+# META SETTINGS (if using Meta WhatsApp Cloud API)
+# =============================================================================
+
+# Your Meta Access Token
 META_ACCESS_TOKEN=your_access_token
+
+# Your Meta Phone Number ID
 META_PHONE_NUMBER_ID=your_phone_number_id
 
-# API Security
-API_BEARER_TOKEN=your_secure_token
+# =============================================================================
+# API SECURITY
+# =============================================================================
 
-# Optional
+# Secure bearer token for API authentication (generate a strong token)
+API_BEARER_TOKEN=your_secure_bearer_token_here
+
+# =============================================================================
+# OPTIONAL SETTINGS
+# =============================================================================
+
+# Timezone for scheduling (default: Asia/Kolkata)
 TIMEZONE=Asia/Kolkata
+
+# Tone for flirty messages: "playful", "romantic", or "witty"
 DAILY_FLIRTY_TONE=playful
+
+# Dates to skip sending messages (YYYY-MM-DD format, comma-separated)
 SKIP_DATES=2024-01-01,2024-12-25
+
+# Log level: "DEBUG", "INFO", "WARNING", "ERROR"
+LOG_LEVEL=INFO
 ```
 
 ### Configuration File (config.yaml)
 
 The `config.yaml` file contains message templates, tone settings, and content policies. See the file for detailed configuration options.
 
-## WhatsApp Setup
+## Detailed Setup Guide
 
-### Option 1: Twilio WhatsApp
+### 🔐 API Bearer Token Setup
 
-1. **Create Twilio Account**
-   - Sign up at [twilio.com](https://www.twilio.com)
-   - Get your Account SID and Auth Token
+The API Bearer Token is used to secure your endpoints and authenticate API requests.
 
-2. **Enable WhatsApp Sandbox**
-   - Go to Twilio Console → Messaging → Try it out → Send a WhatsApp message
-   - Follow the instructions to join your sandbox
-   - Note your WhatsApp number (format: `whatsapp:+1234567890`)
+#### Step 1: Generate a Secure Token
 
-3. **Configure Environment**
+**Option A: Use the Built-in Generator (Recommended)**
+```bash
+# Run the token generator script
+python setup/generate_token.py
+```
+
+**Option B: Use a Password Generator**
+```bash
+# Generate a secure 32-character token
+openssl rand -base64 32
+```
+
+**Option C: Use Python**
+```python
+import secrets
+print(secrets.token_urlsafe(32))
+```
+
+**Option D: Use Online Generator**
+- Visit [https://generate-secret.vercel.app/32](https://generate-secret.vercel.app/32)
+- Copy the generated token
+
+#### Step 2: Configure the Token
+
+1. **Edit your `.env` file:**
    ```bash
+   nano .env
+   # or
+   code .env
+   ```
+
+2. **Replace the placeholder:**
+   ```bash
+   # Change this line:
+   API_BEARER_TOKEN=your_secure_bearer_token_here
+   
+   # To something like:
+   API_BEARER_TOKEN=abc123def456ghi789jkl012mno345pqr678stu901vwx234yz567890
+   ```
+
+3. **Test the token:**
+   ```bash
+   curl -H "Authorization: Bearer your_actual_token" http://localhost:8000/healthz
+   ```
+
+#### Security Best Practices
+
+- ✅ **Use a strong token**: At least 32 characters, mix of letters, numbers, symbols
+- ✅ **Keep it secret**: Never commit your `.env` file to version control
+- ✅ **Rotate regularly**: Change the token periodically
+- ✅ **Use HTTPS**: In production, always use HTTPS for API calls
+- ❌ **Don't share**: Never share your token publicly
+- ❌ **Don't reuse**: Use different tokens for different environments
+
+### 📱 Twilio WhatsApp Setup
+
+#### Step 1: Create Twilio Account
+
+1. **Sign up for Twilio:**
+   - Visit [https://www.twilio.com/try-twilio](https://www.twilio.com/try-twilio)
+   - Click "Sign up for free"
+   - Fill in your details and verify your email
+
+2. **Verify your phone number:**
+   - Twilio will send a verification code to your phone
+   - Enter the code to complete verification
+
+3. **Get your credentials:**
+   - Go to [Twilio Console](https://console.twilio.com/)
+   - Note your **Account SID** (starts with `AC...`)
+   - Note your **Auth Token** (click "show" to reveal)
+
+#### Step 2: Set Up WhatsApp Sandbox
+
+1. **Access WhatsApp Sandbox:**
+   - In Twilio Console, go to **Messaging** → **Try it out** → **Send a WhatsApp message**
+   - Or visit: [https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
+
+2. **Join the Sandbox:**
+   - You'll see a WhatsApp number and a join code
+   - Example: `+1 415 523 8886` with code `join <two-words>`
+   - Open WhatsApp on your phone
+   - Send the join message to the number: `join <two-words>`
+   - You'll receive a confirmation message
+
+3. **Test the Sandbox:**
+   - In the Twilio console, try sending a test message
+   - Enter your WhatsApp number (with country code)
+   - Send a test message
+   - You should receive it on your phone
+
+#### Step 3: Configure Bubu Agent
+
+1. **Update your `.env` file:**
+   ```bash
+   # WhatsApp Provider
    WHATSAPP_PROVIDER=twilio
-   TWILIO_ACCOUNT_SID=your_account_sid
-   TWILIO_AUTH_TOKEN=your_auth_token
+   
+   # Twilio Credentials
+TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   TWILIO_AUTH_TOKEN=your_auth_token_here
+   TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+   
+   # Your girlfriend's WhatsApp number (with country code)
+   GF_WHATSAPP_NUMBER=+1234567890
+   
+   # Your WhatsApp number (for testing)
+   SENDER_WHATSAPP_NUMBER=+1234567890
+   ```
+
+2. **Test the configuration:**
+   ```bash
+   # Start the service
+   uvicorn app:app --host 0.0.0.0 --port 8000
+   
+   # Test sending a message
+   curl -X POST "http://localhost:8000/send-now" \
+     -H "Authorization: Bearer your_api_token" \
+     -H "Content-Type: application/json" \
+     -d '{"type": "morning"}'
+   ```
+
+#### Step 4: Production Setup (Optional)
+
+For production use, you'll need to:
+
+1. **Request WhatsApp Business API:**
+   - Go to [Twilio WhatsApp Business API](https://www.twilio.com/whatsapp)
+   - Apply for a business number
+   - Complete the verification process
+
+2. **Update configuration:**
+   ```bash
+   # Replace sandbox number with your business number
    TWILIO_WHATSAPP_FROM=whatsapp:+1234567890
    ```
+
+#### Troubleshooting Twilio
+
+**Issue: "Message not delivered"**
+- ✅ Check that your girlfriend's number is in the correct format: `+1234567890`
+- ✅ Ensure she has joined the sandbox (if using sandbox)
+- ✅ Verify your Twilio account has sufficient credits
+
+**Issue: "Authentication failed"**
+- ✅ Double-check your Account SID and Auth Token
+- ✅ Make sure there are no extra spaces in your `.env` file
+- ✅ Verify your Twilio account is active
+
+**Issue: "Invalid phone number"**
+- ✅ Use E.164 format: `+[country code][number]`
+- ✅ Example: `+1234567890` for US, `+447123456789` for UK
+- ✅ Remove any spaces, dashes, or parentheses
+
+#### WhatsApp Sandbox Limitations
+
+- ⏰ **24-hour window**: Recipients must respond within 24 hours to continue receiving messages
+- 📱 **One-way initially**: First message must be initiated by the recipient
+- 🔄 **Session renewal**: Recipients need to send a message to renew the session
+- 💰 **Free tier limits**: Check Twilio's current free tier limits
 
 ### Option 2: Meta WhatsApp Cloud API
 
@@ -311,7 +610,7 @@ Authorization: Bearer your_token
 
 3. **Install dependencies:**
    ```bash
-   pip install -e ".[dev]"
+   pip install -r requirements.txt
    ```
 
 4. **Set up pre-commit hooks (optional):**

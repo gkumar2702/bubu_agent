@@ -34,13 +34,12 @@ python -m pip install --upgrade pip
 
 REM Install dependencies
 echo 📚 Installing dependencies...
-pip install -e .
-pip install -e ".[dev]"
+pip install -r requirements.txt
 
 REM Create environment file if it doesn't exist
 if not exist ".env" (
     echo 📝 Creating .env file from template...
-    copy env.example .env
+    copy setup\env.example .env
     echo ✅ .env file created
     echo ⚠️  Please edit .env file with your configuration values
 ) else (
