@@ -17,12 +17,14 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 - **Smart Scheduling**: 3 messages per day at randomized times within specified windows
 - **AI-Powered Messages**: Uses Hugging Face models for personalized content generation
 - **Fallback System**: Template-based fallback when AI generation fails
-- **Multiple WhatsApp Providers**: Support for both Twilio and Meta WhatsApp Cloud API
+- **Multiple WhatsApp Providers**: Support for Meta WhatsApp Cloud API (FREE), Ultramsg, and Twilio
+- **Interactive Message Sender**: Preview and send messages with a beautiful CLI interface
 - **Idempotency**: Prevents duplicate messages across restarts
 - **Do Not Disturb**: Respects quiet hours (except night messages)
 - **Holiday Support**: Skip specific dates via configuration
 - **Observability**: Comprehensive logging and health monitoring
 - **API Interface**: RESTful API for monitoring and manual control
+- **Free API Support**: Multiple free WhatsApp API options with detailed setup guides
 
 ## Message Schedule
 
@@ -60,9 +62,18 @@ pip install -r requirements.txt
 # 4. Generate API token
 python setup/generate_token.py
 
-# 5. Configure environment
+# 5. Choose WhatsApp provider and configure
+# Option A: Meta WhatsApp (Recommended - FREE)
+python setup/switch_to_meta.py
+# Then edit .env with your Meta credentials
+
+# Option B: Ultramsg (Alternative)
+cp setup/env.meta.example .env
+# Edit .env: WHATSAPP_PROVIDER=ultramsg + Ultramsg credentials
+
+# Option C: Twilio (Limited free tier)
 cp setup/env.example .env
-# Edit .env with your settings (see detailed setup guide below)
+# Edit .env: WHATSAPP_PROVIDER=twilio + Twilio credentials
 
 # 6. Run the service
 uvicorn app:app --host 0.0.0.0 --port 8000
@@ -277,11 +288,31 @@ HF_MODEL_ID=Qwen/Qwen2.5-7B-Instruct
 # WHATSAPP PROVIDER SETTINGS
 # =============================================================================
 
-# Choose your WhatsApp provider: "twilio" or "meta"
-WHATSAPP_PROVIDER=twilio
+# Choose your WhatsApp provider: "meta" (recommended), "ultramsg", or "twilio"
+WHATSAPP_PROVIDER=meta
 
 # =============================================================================
-# TWILIO SETTINGS (if using Twilio)
+# META WHATSAPP CLOUD API SETTINGS (Recommended - FREE)
+# =============================================================================
+
+# Your Meta Access Token (get from Meta Developer Console)
+META_ACCESS_TOKEN=your_meta_access_token_here
+
+# Your Meta Phone Number ID (get from Meta Developer Console)
+META_PHONE_NUMBER_ID=your_phone_number_id_here
+
+# =============================================================================
+# ULTRAMSG WHATSAPP API SETTINGS (Alternative)
+# =============================================================================
+
+# Your Ultramsg API Key (get from ultramsg.com)
+ULTRAMSG_API_KEY=your_ultramsg_api_key_here
+
+# Your Ultramsg Instance ID (get from ultramsg.com)
+ULTRAMSG_INSTANCE_ID=your_ultramsg_instance_id_here
+
+# =============================================================================
+# TWILIO SETTINGS (Limited Free Tier)
 # =============================================================================
 
 # Your Twilio Account SID (starts with "AC")
@@ -294,16 +325,6 @@ TWILIO_AUTH_TOKEN=your_auth_token_here
 # For sandbox: whatsapp:+14155238886
 # For production: whatsapp:+1234567890
 TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
-
-# =============================================================================
-# META SETTINGS (if using Meta WhatsApp Cloud API)
-# =============================================================================
-
-# Your Meta Access Token
-META_ACCESS_TOKEN=your_access_token
-
-# Your Meta Phone Number ID
-META_PHONE_NUMBER_ID=your_phone_number_id
 
 # =============================================================================
 # API SECURITY
@@ -334,6 +355,18 @@ LOG_LEVEL=INFO
 The `config.yaml` file contains message templates, tone settings, and content policies. See the file for detailed configuration options.
 
 ## Detailed Setup Guide
+
+### 🆓 Free WhatsApp API Options
+
+**⚠️ Important**: Twilio's free tier has severe limitations for WhatsApp:
+- ❌ **24-hour window**: Recipients must respond within 24 hours
+- ❌ **One-way initially**: First message must be initiated by recipient
+- ❌ **Session renewal**: Recipients need to send messages to renew
+- ❌ **Limited messages**: Very restricted message count
+
+**✅ Recommended**: Use **Meta WhatsApp Cloud API** (1000 messages/month FREE)
+
+For detailed setup instructions, see: [`FREE_WHATSAPP_APIS.md`](FREE_WHATSAPP_APIS.md)
 
 ### 🔐 API Bearer Token Setup
 
@@ -395,112 +428,87 @@ print(secrets.token_urlsafe(32))
 - ❌ **Don't share**: Never share your token publicly
 - ❌ **Don't reuse**: Use different tokens for different environments
 
-### 📱 Twilio WhatsApp Setup
+### 📱 WhatsApp API Setup
 
-#### Step 1: Create Twilio Account
+#### Option 1: Meta WhatsApp Cloud API (Recommended - FREE)
 
-1. **Sign up for Twilio:**
-   - Visit [https://www.twilio.com/try-twilio](https://www.twilio.com/try-twilio)
-   - Click "Sign up for free"
-   - Fill in your details and verify your email
+**✅ Advantages:**
+- **1000 messages/month FREE**
+- **No 24-hour window restriction**
+- **Direct messaging capability**
+- **Production-ready**
 
-2. **Verify your phone number:**
-   - Twilio will send a verification code to your phone
-   - Enter the code to complete verification
+**📋 Quick Setup:**
 
-3. **Get your credentials:**
-   - Go to [Twilio Console](https://console.twilio.com/)
-   - Note your **Account SID** (starts with `AC...`)
-   - Note your **Auth Token** (click "show" to reveal)
+1. **Create Meta Developer Account:**
+   - Visit [developers.facebook.com/apps/](https://developers.facebook.com/apps/)
+   - Click "Create App" → "Business" → "Next"
+   - Fill in app details
 
-#### Step 2: Set Up WhatsApp Sandbox
+2. **Add WhatsApp Product:**
+   - In your app dashboard, click "Add Product"
+   - Find "WhatsApp" → "Set Up"
+   - Follow the setup wizard
 
-1. **Access WhatsApp Sandbox:**
-   - In Twilio Console, go to **Messaging** → **Try it out** → **Send a WhatsApp message**
-   - Or visit: [https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn](https://console.twilio.com/us1/develop/sms/try-it-out/whatsapp-learn)
+3. **Get Your Credentials:**
+   - **Access Token**: WhatsApp → Getting Started
+   - **Phone Number ID**: WhatsApp → Phone Numbers
 
-2. **Join the Sandbox:**
-   - You'll see a WhatsApp number and a join code
-   - Example: `+1 415 523 8886` with code `join <two-words>`
-   - Open WhatsApp on your phone
-   - Send the join message to the number: `join <two-words>`
-   - You'll receive a confirmation message
-
-3. **Test the Sandbox:**
-   - In the Twilio console, try sending a test message
-   - Enter your WhatsApp number (with country code)
-   - Send a test message
-   - You should receive it on your phone
-
-#### Step 3: Configure Bubu Agent
-
-1. **Update your `.env` file:**
+4. **Configure Bubu Agent:**
    ```bash
-   # WhatsApp Provider
-   WHATSAPP_PROVIDER=twilio
+   # Use the switch script
+   python setup/switch_to_meta.py
    
-   # Twilio Credentials
-TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
-   TWILIO_AUTH_TOKEN=your_auth_token_here
-   TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
-   
-   # Your girlfriend's WhatsApp number (with country code)
-   GF_WHATSAPP_NUMBER=+1234567890
-   
-   # Your WhatsApp number (for testing)
-   SENDER_WHATSAPP_NUMBER=+1234567890
+   # Edit .env with your actual values:
+   META_ACCESS_TOKEN=your_actual_access_token
+   META_PHONE_NUMBER_ID=your_actual_phone_number_id
+   GF_WHATSAPP_NUMBER=+1234567890  # Your girlfriend's number
    ```
 
-2. **Test the configuration:**
+5. **Test Setup:**
    ```bash
-   # Start the service
    uvicorn app:app --host 0.0.0.0 --port 8000
-   
-   # Test sending a message
-   curl -X POST "http://localhost:8000/send-now" \
-     -H "Authorization: Bearer your_api_token" \
-     -H "Content-Type: application/json" \
-     -d '{"type": "morning"}'
+   python interactive_sender.py
    ```
 
-#### Step 4: Production Setup (Optional)
+#### Option 2: Ultramsg API (Alternative)
 
-For production use, you'll need to:
+**✅ Advantages:**
+- **Free tier available**
+- **Simple setup**
+- **Good documentation**
 
-1. **Request WhatsApp Business API:**
-   - Go to [Twilio WhatsApp Business API](https://www.twilio.com/whatsapp)
-   - Apply for a business number
-   - Complete the verification process
-
-2. **Update configuration:**
+**📋 Setup:**
+1. Sign up at [ultramsg.com](https://ultramsg.com)
+2. Get your API key and Instance ID
+3. Configure in `.env`:
    ```bash
-   # Replace sandbox number with your business number
-   TWILIO_WHATSAPP_FROM=whatsapp:+1234567890
+   WHATSAPP_PROVIDER=ultramsg
+   ULTRAMSG_API_KEY=your_api_key
+   ULTRAMSG_INSTANCE_ID=your_instance_id
    ```
 
-#### Troubleshooting Twilio
+#### Option 3: Twilio WhatsApp (Limited Free Tier)
 
-**Issue: "Message not delivered"**
-- ✅ Check that your girlfriend's number is in the correct format: `+1234567890`
-- ✅ Ensure she has joined the sandbox (if using sandbox)
-- ✅ Verify your Twilio account has sufficient credits
+**⚠️ Limitations:**
+- **24-hour window**: Recipients must respond within 24 hours
+- **One-way initially**: First message must be initiated by recipient
+- **Session renewal**: Recipients need to send messages to renew
+- **Sandbox only**: No production use without paid plan
 
-**Issue: "Authentication failed"**
-- ✅ Double-check your Account SID and Auth Token
-- ✅ Make sure there are no extra spaces in your `.env` file
-- ✅ Verify your Twilio account is active
+**📋 Setup:**
+1. Sign up at [twilio.com](https://www.twilio.com/try-twilio)
+2. Get Account SID and Auth Token
+3. Join WhatsApp sandbox
+4. Configure in `.env`:
+   ```bash
+   WHATSAPP_PROVIDER=twilio
+   TWILIO_ACCOUNT_SID=ACxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+   TWILIO_AUTH_TOKEN=your_auth_token
+   TWILIO_WHATSAPP_FROM=whatsapp:+14155238886
+   ```
 
-**Issue: "Invalid phone number"**
-- ✅ Use E.164 format: `+[country code][number]`
-- ✅ Example: `+1234567890` for US, `+447123456789` for UK
-- ✅ Remove any spaces, dashes, or parentheses
-
-#### WhatsApp Sandbox Limitations
-
-- ⏰ **24-hour window**: Recipients must respond within 24 hours to continue receiving messages
-- 📱 **One-way initially**: First message must be initiated by the recipient
-- 🔄 **Session renewal**: Recipients need to send a message to renew the session
-- 💰 **Free tier limits**: Check Twilio's current free tier limits
+**📖 For detailed setup instructions, see: [`FREE_WHATSAPP_APIS.md`](FREE_WHATSAPP_APIS.md)**
 
 ### Option 2: Meta WhatsApp Cloud API
 
@@ -911,6 +919,51 @@ For issues and questions:
 1. Check the troubleshooting section
 2. Review the logs
 3. Open an issue on GitHub
+
+## 📁 Project Structure
+
+```
+bubu_agent/
+├── app.py                 # FastAPI application
+├── requirements.txt       # Python dependencies
+├── config.yaml           # Message templates and settings
+├── setup/
+│   ├── env.example       # Environment variables template
+│   ├── env.meta.example  # Meta WhatsApp configuration
+│   ├── generate_token.py # API token generator
+│   ├── switch_to_meta.py # Switch to Meta WhatsApp
+│   ├── setup.sh          # Automated setup (macOS/Linux)
+│   └── setup.bat         # Automated setup (Windows)
+├── providers/
+│   ├── messenger.py      # Abstract messenger interface
+│   ├── twilio_whatsapp.py # Twilio WhatsApp implementation
+│   ├── meta_whatsapp.py  # Meta WhatsApp implementation
+│   ├── ultramsg_whatsapp.py # Ultramsg WhatsApp implementation
+│   └── huggingface_llm.py # Hugging Face LLM client
+├── utils/
+│   ├── config.py         # Configuration management
+│   ├── compose.py        # Message composition
+│   ├── scheduler.py      # Message scheduling
+│   ├── storage.py        # Database operations
+│   └── utils.py          # Utility functions
+├── tests/                # Unit tests
+├── interactive_sender.py # Interactive message sender
+├── INTERACTIVE_README.md # Interactive sender documentation
+├── FREE_WHATSAPP_APIS.md # Free WhatsApp APIs guide
+└── README.md            # This file
+```
+
+## 🆕 New Features
+
+### Interactive Message Sender
+- **`interactive_sender.py`**: Beautiful CLI interface to preview and send messages
+- **`INTERACTIVE_README.md`**: Complete documentation for the interactive sender
+
+### Free WhatsApp API Support
+- **`FREE_WHATSAPP_APIS.md`**: Comprehensive guide for free WhatsApp APIs
+- **`setup/switch_to_meta.py`**: Script to migrate from Twilio to Meta WhatsApp
+- **`providers/ultramsg_whatsapp.py`**: Ultramsg API provider implementation
+- **`setup/env.meta.example`**: Meta WhatsApp configuration template
 
 ---
 

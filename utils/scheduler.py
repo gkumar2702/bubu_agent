@@ -10,7 +10,7 @@ from pytz import timezone
 
 from .compose import MessageComposer, create_message_composer
 from .config import config
-from providers import TwilioWhatsApp, MetaWhatsApp
+from providers import TwilioWhatsApp, MetaWhatsApp, UltramsgWhatsApp
 from .storage import Storage
 from .utils import (
     SeededRandom, get_date_seed, get_logger,
@@ -64,6 +64,15 @@ class MessageScheduler:
             return MetaWhatsApp(
                 access_token=settings.meta_access_token,
                 phone_number_id=settings.meta_phone_number_id
+            )
+        
+        elif settings.whatsapp_provider == "ultramsg":
+            if not all([settings.ultramsg_api_key, settings.ultramsg_instance_id]):
+                raise ValueError("Missing Ultramsg configuration")
+            
+            return UltramsgWhatsApp(
+                api_key=settings.ultramsg_api_key,
+                instance_id=settings.ultramsg_instance_id
             )
         
         else:
