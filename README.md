@@ -62,16 +62,16 @@ pip install -r requirements.txt
 # 4. Generate API token
 python setup/generate_token.py
 
-# 5. Choose WhatsApp provider and configure
+90601ca56dd1ca3bc9db7d49fb475574# 5. Choose WhatsApp provider and configure
 # Option A: Meta WhatsApp (Recommended - FREE)
 python setup/switch_to_meta.py
 # Then edit .env with your Meta credentials
 
-# Option B: Ultramsg (Alternative)
-cp setup/env.meta.example .env
-# Edit .env: WHATSAPP_PROVIDER=ultramsg + Ultramsg credentials
+# Option B: Ultramsg (Also Recommended - FREE)
+python setup/switch_to_ultramsg.py
+# Then edit .env with your Ultramsg credentials
 
-# Option C: Twilio (Limited free tier)
+# Option C: Twilio (Limited free tier - Not Recommended)
 cp setup/env.example .env
 # Edit .env: WHATSAPP_PROVIDER=twilio + Twilio credentials
 
@@ -364,9 +364,9 @@ The `config.yaml` file contains message templates, tone settings, and content po
 - ❌ **Session renewal**: Recipients need to send messages to renew
 - ❌ **Limited messages**: Very restricted message count
 
-**✅ Recommended**: Use **Meta WhatsApp Cloud API** (1000 messages/month FREE)
+**✅ Recommended**: Use **Meta WhatsApp Cloud API** (1000 messages/month FREE) or **Ultramsg** (100 messages/day FREE)
 
-For detailed setup instructions, see: [`FREE_WHATSAPP_APIS.md`](FREE_WHATSAPP_APIS.md)
+For detailed setup instructions, see: [`FREE_WHATSAPP_APIS.md`](FREE_WHATSAPP_APIS.md) and [`ULTRAMSG_SETUP_GUIDE.md`](ULTRAMSG_SETUP_GUIDE.md)
 
 ### 🔐 API Bearer Token Setup
 
@@ -438,6 +438,24 @@ print(secrets.token_urlsafe(32))
 - **Direct messaging capability**
 - **Production-ready**
 
+#### Option 1.5: Ultramsg API (Also Recommended - FREE)
+
+**✅ Advantages:**
+- **100 messages/day FREE**
+- **Simple QR code setup**
+- **No complex verification**
+- **Reliable delivery**
+- **Good documentation**
+
+**📋 Quick Setup:**
+```bash
+# Use the switch script
+python setup/switch_to_ultramsg.py
+
+# Follow the detailed guide
+# See: ULTRAMSG_SETUP_GUIDE.md
+```
+
 **📋 Quick Setup:**
 
 1. **Create Meta Developer Account:**
@@ -488,7 +506,9 @@ print(secrets.token_urlsafe(32))
    ULTRAMSG_INSTANCE_ID=your_instance_id
    ```
 
-#### Option 3: Twilio WhatsApp (Limited Free Tier)
+**📖 For detailed setup instructions, see: [`ULTRAMSG_SETUP_GUIDE.md`](ULTRAMSG_SETUP_GUIDE.md)**
+
+#### Option 3: Twilio WhatsApp (Limited Free Tier - Not Recommended)
 
 **⚠️ Limitations:**
 - **24-hour window**: Recipients must respond within 24 hours
@@ -961,7 +981,9 @@ bubu_agent/
 
 ### Free WhatsApp API Support
 - **`FREE_WHATSAPP_APIS.md`**: Comprehensive guide for free WhatsApp APIs
+- **`ULTRAMSG_SETUP_GUIDE.md`**: Complete Ultramsg setup guide
 - **`setup/switch_to_meta.py`**: Script to migrate from Twilio to Meta WhatsApp
+- **`setup/switch_to_ultramsg.py`**: Script to migrate to Ultramsg WhatsApp
 - **`providers/ultramsg_whatsapp.py`**: Ultramsg API provider implementation
 - **`setup/env.meta.example`**: Meta WhatsApp configuration template
 
