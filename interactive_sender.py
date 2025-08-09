@@ -134,7 +134,7 @@ class InteractiveSender:
             print("✅ Connected to Bubu Agent successfully!")
         except Exception as e:
             print(f"❌ Cannot connect to Bubu Agent: {e}")
-            print("   Make sure the server is running with: uvicorn app:app --host 0.0.0.0 --port 8000")
+            print("   Make sure the server is running with: uvicorn setup.app:app --host 0.0.0.0 --port 8000")
             return
         
         message_types = ["morning", "flirty", "night"]

@@ -122,7 +122,7 @@ LOG_LEVEL=INFO
     print("   - GF_WHATSAPP_NUMBER=+1234567890 (her number)")
     
     print("\n5. 🧪 Test the setup:")
-    print("   uvicorn app:app --host 0.0.0.0 --port 8000")
+    print("   uvicorn setup.app:app --host 0.0.0.0 --port 8000")
     print("   python interactive_sender.py")
     
     print("\n📖 For detailed instructions, see: ULTRAMSG_SETUP_GUIDE.md")

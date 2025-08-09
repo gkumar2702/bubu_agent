@@ -9,6 +9,8 @@ from apscheduler.triggers.cron import CronTrigger
 from pytz import timezone
 
 from .compose import MessageComposer, create_message_composer
+from .compose_refactored import create_message_composer_refactored
+from .types import MessageType
 from .config import config
 from providers import TwilioWhatsApp, MetaWhatsApp, UltramsgWhatsApp
 from .storage import Storage
@@ -26,11 +28,17 @@ class MessageScheduler:
     def __init__(self):
         self.scheduler = AsyncIOScheduler()
         self.storage = Storage()
-        self.composer = create_message_composer()
         self.messenger = self._create_messenger()
         
-        # Set storage reference in composer
-        self.composer.set_storage(self.storage)
+        # Create LLM instance for refactored composer
+        from providers.huggingface_llm import HuggingFaceLLM
+        self.llm = HuggingFaceLLM(
+            api_key=config.settings.hf_api_key,
+            model_id=config.settings.hf_model_id
+        )
+        
+        # Create refactored composer with LLM and storage
+        self.composer = create_message_composer_refactored(self.llm, self.storage)
         
         # Message windows (in local timezone)
         self.message_windows = {
@@ -324,16 +332,19 @@ class MessageScheduler:
                 return
             
             # Compose message
-            message, status = await self.composer.compose_message(message_type, date_obj)
+            message_type_enum = MessageType(message_type)
+            result = await self.composer.compose_message(message_type_enum, date_obj)
             
-            if not message:
+            if not result.text:
                 logger.warning(
-                    f"No {message_type} message composed, skipping: {date_obj.isoformat()} (status: {status})",
+                    f"No {message_type} message composed, skipping: {date_obj.isoformat()} (status: {result.status.value})",
                     type=message_type,
                     date=date_obj.isoformat(),
-                    status=status
+                    status=result.status.value
                 )
                 return
+            
+            message = result.text
             
             # Send message
             provider_id = await self.messenger.send_text(
@@ -385,10 +396,13 @@ class MessageScheduler:
                 return False, "Message already sent today", {}
             
             # Compose and send
-            message, status = await self.composer.compose_message(message_type, today)
+            message_type_enum = MessageType(message_type)
+            result = await self.composer.compose_message(message_type_enum, today)
             
-            if not message:
-                return False, f"No message composed (status: {status})", {}
+            if not result.text:
+                return False, f"No message composed (status: {result.status.value})", {}
+            
+            message = result.text
             
             provider_id = await self.messenger.send_text(
                 config.settings.gf_whatsapp_number,

@@ -106,7 +106,7 @@ Before starting, make sure you have:
 
 1. **Start the Server:**
    ```bash
-   uvicorn app:app --host 0.0.0.0 --port 8000
+   uvicorn setup.app:app --host 0.0.0.0 --port 8000
    ```
 
 2. **Test Health Endpoint:**

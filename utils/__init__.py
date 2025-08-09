@@ -46,6 +46,8 @@ __all__ = [
     # Compose
     "MessageComposer",
     "create_message_composer",
+    "MessageComposerRefactored",
+    "create_message_composer_refactored",
     # Scheduler
     "MessageScheduler",
 ]

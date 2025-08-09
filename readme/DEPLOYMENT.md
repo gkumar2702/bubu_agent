@@ -106,7 +106,7 @@ Type=simple
 User=bubu
 WorkingDirectory=/opt/bubu_agent
 Environment=PATH=/opt/bubu_agent/venv/bin
-ExecStart=/opt/bubu_agent/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
+ExecStart=/opt/bubu_agent/venv/bin/uvicorn setup.app:app --host 0.0.0.0 --port 8000
 Restart=always
 RestartSec=10
 
@@ -129,7 +129,7 @@ sudo systemctl status bubu-agent
 npm install -g pm2
 
 # Start application
-pm2 start "uvicorn app:app --host 0.0.0.0 --port 8000" --name bubu-agent
+pm2 start "uvicorn setup.app:app --host 0.0.0.0 --port 8000" --name bubu-agent
 
 # Save PM2 configuration
 pm2 save
@@ -283,7 +283,7 @@ cp bubu_agent.db backup_$(date +%Y%m%d).db
 export LOG_LEVEL=DEBUG
 
 # Run with debug output
-uvicorn app:app --host 0.0.0.0 --port 8000 --log-level debug
+uvicorn setup.app:app --host 0.0.0.0 --port 8000 --log-level debug
 ```
 
 ### Support

@@ -108,7 +108,7 @@ GF_WHATSAPP_NUMBER=+1234567890  # Your girlfriend's number
 ### 5. Test Setup
 ```bash
 # Restart the server
-uvicorn app:app --host 0.0.0.0 --port 8000
+uvicorn setup.app:app --host 0.0.0.0 --port 8000
 
 # Test sending a message
 curl -X POST "http://localhost:8000/send-now" \

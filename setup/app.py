@@ -9,13 +9,15 @@ from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel
 
 from utils import (
-    create_message_composer,
     config,
     MessageScheduler,
     Storage,
     get_logger,
     setup_logging
 )
+from utils.compose_refactored import create_message_composer_refactored
+from utils.types import MessageType
+from providers.huggingface_llm import HuggingFaceLLM
 
 # Setup logging
 setup_logging(config.settings.log_level)
@@ -33,6 +35,12 @@ security = HTTPBearer()
 
 # Create scheduler instance
 scheduler = MessageScheduler()
+
+# Create LLM instance
+llm = HuggingFaceLLM(
+    api_key=config.settings.hf_api_key,
+    model_id=config.settings.hf_model_id
+)
 
 
 class MessagePreviewRequest(BaseModel):
@@ -173,7 +181,7 @@ async def preview_message(
                 detail="Invalid message type. Must be one of: morning, flirty, night"
             )
         
-        composer = create_message_composer()
+        composer = create_message_composer_refactored(llm)
         options = request.options or {}
         count = options.get("count", 1)
         include_fallback = options.get("include_fallback", False)
@@ -184,7 +192,8 @@ async def preview_message(
         # Generate multiple messages
         for i in range(count):
             try:
-                message = composer.get_message_preview(request.type, {
+                message_type = MessageType(request.type)
+                message = composer.get_message_preview(message_type, {
                     "randomize": randomize,
                     "seed": i if randomize else None
                 })
@@ -200,7 +209,7 @@ async def preview_message(
         
         # Add fallback templates if requested
         if include_fallback:
-            fallback_templates = composer.get_fallback_templates(request.type)
+            fallback_templates = composer.get_fallback_templates(message_type)
             for i, template in enumerate(fallback_templates[:3]):  # Limit to 3 fallbacks
                 messages.append({
                     "text": template,
@@ -227,16 +236,16 @@ async def dry_run():
     """Get today's planned messages without sending."""
     try:
         today = date.today()
-        composer = create_message_composer()
-        composer.set_storage(scheduler.storage)
+        composer = create_message_composer_refactored(llm, scheduler.storage)
         
         messages = []
-        for message_type in ["morning", "flirty", "night"]:
-            message, status = await composer.compose_message(message_type, today)
+        for message_type_str in ["morning", "flirty", "night"]:
+            message_type = MessageType(message_type_str)
+            result = await composer.compose_message(message_type, today)
             messages.append({
-                "type": message_type,
-                "message": message,
-                "status": status
+                "type": message_type_str,
+                "message": result.text,
+                "status": result.status.value
             })
         
         return DryRunResponse(

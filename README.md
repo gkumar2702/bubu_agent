@@ -20,6 +20,7 @@ This service includes an easy pause mechanism (set `ENABLED=false` in `.env`) an
 - **Fallback System**: Template-based fallback when AI generation fails
 - **Multiple WhatsApp Providers**: Support for Meta WhatsApp Cloud API (FREE), Ultramsg, and Twilio
 - **Interactive Message Sender**: Preview and send messages with a beautiful CLI interface
+- **Beautiful CLI Tool**: Rich, colorful command-line interface with interactive mode
 - **Idempotency**: Prevents duplicate messages across restarts
 - **Do Not Disturb**: Respects quiet hours (except night messages)
 - **Holiday Support**: Skip specific dates via configuration
@@ -108,7 +109,7 @@ cp setup/env.example .env
 # Edit .env: WHATSAPP_PROVIDER=twilio + Twilio credentials
 
 # 6. Run the service
-uvicorn app:app --host 0.0.0.0 --port 8000
+uvicorn setup.app:app --host 0.0.0.0 --port 8000
 ```
 
 ### Option 1: Automated Setup (Recommended)
@@ -192,10 +193,10 @@ cp setup/env.example .env
 
 ```bash
 # Using uvicorn directly
-uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+uvicorn setup.app:app --host 0.0.0.0 --port 8000 --reload
 
 # Or using the Makefile
-make run
+cd setup && make run
 ```
 
 The service will be available at `http://localhost:8000`
@@ -213,6 +214,72 @@ curl http://localhost:8000/healthz
 curl http://localhost:8000/plan/today
 
 ```
+
+## 💕 CLI Tool - Your Personal Love Assistant
+
+Just like in those beautiful Bollywood movies where love finds a way, we've created a beautiful CLI tool for your personal love assistant! 
+
+### Quick CLI Start
+
+```bash
+# Install CLI dependencies
+pip install click rich
+
+# Make CLI executable
+chmod +x bubu_cli.py
+
+# Show help
+python bubu_cli.py --help
+
+# Check status
+python bubu_cli.py status
+
+# Start interactive mode
+python bubu_cli.py interactive
+```
+
+### CLI Features
+
+- **Beautiful Interface**: Rich, colorful CLI with emojis and romantic styling
+- **Interactive Mode**: Menu-driven interface for easy navigation
+- **Message Preview**: See what messages will be sent before sending
+- **Dry Run**: Test message generation without actually sending
+- **Status Monitoring**: Check your agent's health and configuration
+- **Message History**: View recent messages from storage
+- **Romantic Quotes**: Get inspired with beautiful Bollywood quotes
+
+### CLI Commands
+
+```bash
+# Show status
+python bubu_cli.py status
+
+# Show today's plan
+python bubu_cli.py plan
+
+# Preview messages
+python bubu_cli.py preview --type morning --count 3
+
+# Dry run (see what would be sent)
+python bubu_cli.py dry-run
+
+# Send a message immediately
+python bubu_cli.py send --type flirty
+
+# Send a custom message
+python bubu_cli.py send --type morning --message "Good morning my love! 💕"
+
+# Show recent messages
+python bubu_cli.py recent --days 7
+
+# Get a romantic quote
+python bubu_cli.py quote
+
+# Start interactive mode
+python bubu_cli.py interactive
+```
+
+For detailed CLI documentation, see [readme/CLI_README.md](readme/CLI_README.md).
 
 ### 7. Test Your Setup
 
@@ -531,7 +598,7 @@ python setup/switch_to_ultramsg.py
 
 5. **Test Setup:**
    ```bash
-   uvicorn app:app --host 0.0.0.0 --port 8000
+   uvicorn setup.app:app --host 0.0.0.0 --port 8000
    python interactive_sender.py
    ```
 
@@ -818,7 +885,7 @@ Type=simple
 User=bubu
 WorkingDirectory=/path/to/bubu_agent
 Environment=PATH=/path/to/venv/bin
-ExecStart=/path/to/venv/bin/uvicorn app:app --host 0.0.0.0 --port 8000
+ExecStart=/path/to/venv/bin/uvicorn setup.app:app --host 0.0.0.0 --port 8000
 Restart=always
 
 [Install]
@@ -828,7 +895,7 @@ WantedBy=multi-user.target
 ### Using PM2
 
 ```bash
-pm2 start "uvicorn app:app --host 0.0.0.0 --port 8000" --name bubu-agent
+pm2 start "uvicorn setup.app:app --host 0.0.0.0 --port 8000" --name bubu-agent
 pm2 save
 pm2 startup
 ```

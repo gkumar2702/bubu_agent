@@ -34,7 +34,7 @@ The `interactive_sender.py` script provides an interactive command-line interfac
 
 1. **Bubu Agent running**: Make sure your Bubu Agent is running:
    ```bash
-   uvicorn app:app --host 0.0.0.0 --port 8000
+   uvicorn setup.app:app --host 0.0.0.0 --port 8000
    ```
 
 2. **Environment configured**: Ensure your `.env` file has the correct settings:
