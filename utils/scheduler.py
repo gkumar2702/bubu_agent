@@ -334,17 +334,27 @@ class MessageScheduler:
             # Compose message
             message_type_enum = MessageType(message_type)
             result = await self.composer.compose_message(message_type_enum, date_obj)
+
+            # Support both tuple return (text, status) and MessageResult with .text
+            message_text = None
+            try:
+                if isinstance(result, tuple):
+                    message_text = result[0]
+                else:
+                    message_text = result.text
+            except Exception:
+                message_text = None
             
-            if not result.text:
+            if not message_text:
                 logger.warning(
-                    f"No {message_type} message composed, skipping: {date_obj.isoformat()} (status: {result.status.value})",
+                    f"No {message_type} message composed, skipping: {date_obj.isoformat()}",
                     type=message_type,
                     date=date_obj.isoformat(),
-                    status=result.status.value
+                    status=getattr(getattr(result, 'status', None), 'value', 'unknown')
                 )
                 return
             
-            message = result.text
+            message = message_text
             
             # Send message
             provider_id = await self.messenger.send_text(
@@ -353,16 +363,17 @@ class MessageScheduler:
             )
             
             # Record the message
+            status = "sent" if provider_id else "failed"
             self.storage.record_message_sent(
                 date_obj=date_obj,
                 slot=message_type,
                 text=message,
-                status="sent" if provider_id else "failed",
+                status=status,
                 provider_id=provider_id
             )
             
             logger.info(
-                f"{message_type} message sent successfully: {date_obj.isoformat()} (provider_id: {provider_id}, status: {status})",
+                f"{message_type} message processed: {date_obj.isoformat()} (provider_id: {provider_id}, status: {status})",
                 type=message_type,
                 date=date_obj.isoformat(),
                 provider_id=provider_id,
@@ -386,48 +397,64 @@ class MessageScheduler:
                 provider_id=None
             )
     
-    async def send_message_now(self, message_type: str) -> Tuple[bool, str, Dict[str, str]]:
-        """Send a message immediately."""
+    async def send_message_now_with_info(self, message_type: str) -> Tuple[bool, str, Dict[str, str]]:
+        """Send a message immediately and include provider info in the response."""
+        today = date.today()
+        
+        # Check if already sent
+        if self.storage.is_message_sent(today, message_type):
+            return False, "Message already sent today", {}
+        
+        # Compose and send
+        message_type_enum = MessageType(message_type)
+        result = await self.composer.compose_message(message_type_enum, today)
+
+        # Support both tuple and MessageResult
+        message_text = None
         try:
-            today = date.today()
-            
-            # Check if already sent
-            if self.storage.is_message_sent(today, message_type):
-                return False, "Message already sent today", {}
-            
-            # Compose and send
-            message_type_enum = MessageType(message_type)
-            result = await self.composer.compose_message(message_type_enum, today)
-            
-            if not result.text:
-                return False, f"No message composed (status: {result.status.value})", {}
-            
-            message = result.text
-            
-            provider_id = await self.messenger.send_text(
-                config.settings.gf_whatsapp_number,
-                message
-            )
-            
-            # Record the message
-            self.storage.record_message_sent(
-                date_obj=today,
-                slot=message_type,
-                text=message,
-                status="sent" if provider_id else "failed",
-                provider_id=provider_id
-            )
-            
-            provider_info = {
-                "provider": config.settings.whatsapp_provider,
-                "message_id": provider_id
-            }
-            
-            return True, "Message sent successfully", provider_info
-            
+            if isinstance(result, tuple):
+                message_text = result[0]
+            else:
+                message_text = result.text
+        except Exception:
+            message_text = None
+        
+        if not message_text:
+            status_val = getattr(getattr(result, 'status', None), 'value', 'unknown')
+            return False, f"No message composed (status: {status_val})", {}
+        
+        message = message_text
+        
+        provider_id = await self.messenger.send_text(
+            config.settings.gf_whatsapp_number,
+            message
+        )
+        
+        # Record the message
+        status = "sent" if provider_id else "failed"
+        self.storage.record_message_sent(
+            date_obj=today,
+            slot=message_type,
+            text=message,
+            status=status,
+            provider_id=provider_id
+        )
+        
+        provider_info = {
+            "provider": config.settings.whatsapp_provider,
+            "message_id": provider_id
+        }
+        
+        return True, "Message sent successfully", provider_info
+
+    async def send_message_now(self, message_type: str) -> Tuple[bool, str]:
+        """Send a message immediately (compat: return only success and message)."""
+        try:
+            success, message, _ = await self.send_message_now_with_info(message_type)
+            return success, message
         except Exception as e:
             logger.error(f"Error sending {message_type} message now: {e}")
-            return False, f"Error: {str(e)}", {}
+            return False, f"Error: {str(e)}"
     
     async def send_custom_message(self, message_type: str, custom_message: str) -> Tuple[bool, str, Dict[str, str]]:
         """Send a custom message immediately."""

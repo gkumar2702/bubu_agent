@@ -58,11 +58,14 @@ class HuggingFaceLLM:
         Returns:
             Generated text or None if failed
         """
+        # Build a plain text prompt for broad compatibility with HF Inference API
+        # Many hosted models expect a single string input rather than a structured chat payload
+        prompt = (system_prompt or "").strip()
+        if user_prompt:
+            prompt = f"{prompt}\n\n{user_prompt.strip()}" if prompt else user_prompt.strip()
+
         payload = {
-            "inputs": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
+            "inputs": prompt,
             "parameters": {
                 "max_new_tokens": max_new_tokens,
                 "temperature": temperature,

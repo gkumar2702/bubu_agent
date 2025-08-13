@@ -341,10 +341,12 @@ class MessageComposer:
 def create_message_composer() -> MessageComposer:
     """Create a message composer instance."""
     settings = config.settings
+    # Allow YAML override for model id
+    model_id = config.get_hf_setting("model_id", settings.hf_model_id) or settings.hf_model_id
     
     llm = HuggingFaceLLM(
         api_key=settings.hf_api_key,
-        model_id=settings.hf_model_id,
+        model_id=model_id,
         timeout=config.get_hf_setting("timeout_seconds", 30),
         max_retries=config.get_hf_setting("max_retries", 3)
     )

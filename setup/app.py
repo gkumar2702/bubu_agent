@@ -18,6 +18,7 @@ from utils import (
 from utils.compose_refactored import create_message_composer_refactored
 from utils.types import MessageType
 from providers.huggingface_llm import HuggingFaceLLM
+from providers.local_transformers_llm import LocalTransformersLLM
 
 # Setup logging
 setup_logging(config.settings.log_level)
@@ -37,10 +38,26 @@ security = HTTPBearer()
 scheduler = MessageScheduler()
 
 # Create LLM instance
-llm = HuggingFaceLLM(
-    api_key=config.settings.hf_api_key,
-    model_id=config.settings.hf_model_id
-)
+# Allow switching to local transformers by environment flag
+use_local = False
+try:
+    import os
+    use_local = os.getenv("USE_LOCAL_LLM", "false").lower() in ("1", "true", "yes")
+except Exception:
+    use_local = False
+
+if use_local:
+    # Allow YAML override for model id
+    _model_id = config.get_hf_setting("model_id", config.settings.hf_model_id) or config.settings.hf_model_id
+    llm = LocalTransformersLLM(model_id=_model_id)
+    logger.info("Using LocalTransformersLLM", model_id=_model_id)
+else:
+    _model_id = config.get_hf_setting("model_id", config.settings.hf_model_id) or config.settings.hf_model_id
+    llm = HuggingFaceLLM(
+        api_key=config.settings.hf_api_key,
+        model_id=_model_id
+    )
+    logger.info("Using HuggingFaceLLM", model_id=_model_id)
 
 
 class MessagePreviewRequest(BaseModel):
@@ -186,6 +203,7 @@ async def preview_message(
         count = options.get("count", 1)
         include_fallback = options.get("include_fallback", False)
         randomize = options.get("randomize", False)
+        use_ai_generation = options.get("use_ai_generation", False)  # New option for AI generation
         
         messages = []
         
@@ -193,16 +211,48 @@ async def preview_message(
         for i in range(count):
             try:
                 message_type = MessageType(request.type)
-                message = composer.get_message_preview(message_type, {
-                    "randomize": randomize,
-                    "seed": i if randomize else None
-                })
                 
-                messages.append({
-                    "text": message,
-                    "index": i + 1,
-                    "is_fallback": False
-                })
+                if use_ai_generation:
+                    # Use AI generation with Bollywood quotes and cheesy lines
+                    today = date.today()
+                    result = await composer.compose_message(message_type, today, force_fallback=False)
+                    
+                    if result.status.value == "ai_generated":
+                        messages.append({
+                            "text": result.text,
+                            "index": i + 1,
+                            "is_fallback": False,
+                            "is_ai_generated": True,
+                            "status": result.status.value
+                        })
+                    else:
+                        # Fallback to template if AI generation fails
+                        message = composer.get_message_preview(message_type, {
+                            "randomize": randomize,
+                            "seed": i if randomize else None
+                        })
+                        messages.append({
+                            "text": message,
+                            "index": i + 1,
+                            "is_fallback": False,
+                            "is_ai_generated": False,
+                            "status": "fallback"
+                        })
+                else:
+                    # Use template-based preview (default behavior)
+                    message = composer.get_message_preview(message_type, {
+                        "randomize": randomize,
+                        "seed": i if randomize else None
+                    })
+                    
+                    messages.append({
+                        "text": message,
+                        "index": i + 1,
+                        "is_fallback": False,
+                        "is_ai_generated": False,
+                        "status": "template"
+                    })
+                    
             except Exception as e:
                 logger.warning(f"Failed to generate message {i+1}", error=str(e))
                 continue
@@ -214,7 +264,9 @@ async def preview_message(
                 messages.append({
                     "text": template,
                     "index": len(messages) + 1,
-                    "is_fallback": True
+                    "is_fallback": True,
+                    "is_ai_generated": False,
+                    "status": "fallback_template"
                 })
         
         return MessagePreviewResponse(
@@ -278,7 +330,7 @@ async def send_message_now(
             success, result_message, provider_info = await scheduler.send_custom_message(request.type, request.message)
         else:
             # Generate and send message
-            success, result_message, provider_info = await scheduler.send_message_now(request.type)
+        success, result_message, provider_info = await scheduler.send_message_now_with_info(request.type)
         
         return SendNowResponse(
             success=success,

@@ -36,6 +36,7 @@ class InteractiveSender:
         """Get 5 message options for a specific type."""
         try:
             # Use the config preview endpoint to get message options
+            # Enable AI generation with Bollywood quotes and cheesy lines by default
             response = await self.client.post(
                 f"{self.base_url}/config/preview",
                 json={
@@ -43,7 +44,8 @@ class InteractiveSender:
                     "options": {
                         "count": 5,
                         "include_fallback": True,
-                        "randomize": True
+                        "randomize": True,
+                        "use_ai_generation": True  # Enable AI generation with Bollywood features
                     }
                 },
                 headers={"Authorization": f"Bearer {self.bearer_token}"}
@@ -97,9 +99,20 @@ class InteractiveSender:
         for i, msg in enumerate(messages, 1):
             print(f"\n{i}. {msg.get('text', 'No text available')}")
             print(f"   Length: {len(msg.get('text', ''))} chars")
+            
+            # Show message type and status
             if msg.get('is_fallback'):
-                print(f"   📋 Fallback template")
-            print()
+                print(f"   Type: 📋 Fallback Template")
+            elif msg.get('is_ai_generated'):
+                print(f"   Type: 🤖 AI Generated (with Bollywood quotes & cheesy lines)")
+            else:
+                print(f"   Type: 📝 Template-based")
+            
+            # Show status if available
+            if msg.get('status'):
+                print(f"   Status: {msg.get('status')}")
+            
+            print(f"   Index: {msg.get('index', 'N/A')}")
     
     def get_user_choice(self, max_options: int) -> int:
         """Get user choice for message selection."""

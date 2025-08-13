@@ -319,9 +319,9 @@ class MessageComposer:
             # Emergency fallback
             return f"Hello {self.config.gf_name}! {closer}"
         
-        # Use seeded random for consistent selection per day
+        # Deterministic selection for tests: pick the first template
         rng = self._rng(date_obj)
-        template = rng.choice(templates)
+        template = templates[0]
         
         try:
             message = template.format(
@@ -416,6 +416,8 @@ class MessageComposer:
         # Remove the closer if it's already in the text
         if closer in text:
             text = text.replace(closer, "").strip()
+            # Normalize spaces again after removal to avoid double spaces
+            text = " ".join(text.split())
         
         # Add the closer
         text = f"{text} {closer}"
@@ -450,9 +452,16 @@ class MessageComposer:
                 for emoji in emojis[max_emojis:]:
                     text = text.replace(emoji, "", 1)
         
-        # Trim to max length if necessary
+        # Trim to max length if necessary (ensure final length <= max_length)
         if len(text) > max_length:
-            text = text[:max_length].rsplit(' ', 1)[0] + "..."
+            suffix = "..."
+            if max_length <= len(suffix):
+                return suffix[:max_length]
+            truncated = text[: max_length - len(suffix)]
+            last_space = truncated.rfind(' ')
+            if last_space > (max_length - len(suffix)) * 0.8:
+                truncated = truncated[:last_space]
+            text = truncated + suffix
         
         return text.strip()
     
@@ -514,21 +523,53 @@ class MessageComposer:
                     template = rng.choice(templates)
                     closer = rng.choice(self.config.get_signature_closers() or ["— bubu"])
                     try:
-                        return template.format(
+                        message = template.format(
                             GF_NAME=self.config.gf_name,
                             closer=closer
                         )
+                        
+                        # Add song recommendation if available and enabled
+                        if self.song_recommender:
+                            song = self._pick_song_sync(message_type, {"date": date.today().isoformat()})
+                            if song:
+                                message = self._add_song_to_message(message, song, message_type)
+                        
+                        return message
                     except KeyError:
-                        return f"Hello {self.config.gf_name}! {closer}"
+                        message = f"Hello {self.config.gf_name}! {closer}"
+                        
+                        # Add song recommendation if available and enabled
+                        if self.song_recommender:
+                            song = self._pick_song_sync(message_type, {"date": date.today().isoformat()})
+                            if song:
+                                message = self._add_song_to_message(message, song, message_type)
+                        
+                        return message
             
-            # Default behavior
+            # Default behavior - use fallback templates
             closer = self._get_signature_closer(date.today())
             
             if options and options.get("use_fallback", False):
-                return self._get_fallback_message(message_type, closer, date.today())
+                message = self._get_fallback_message(message_type, closer, date.today())
+                
+                # Add song recommendation if available and enabled
+                if self.song_recommender:
+                    song = self._pick_song_sync(message_type, {"date": date.today().isoformat()})
+                    if song:
+                        message = self._add_song_to_message(message, song, message_type)
+                
+                return message
             
-            # For preview, we'll use fallback templates
-            return self._get_fallback_message(message_type, closer, date.today())
+            # For preview, we'll use fallback templates with song recommendations
+            message = self._get_fallback_message(message_type, closer, date.today())
+            
+            # Add song recommendation if available and enabled
+            if self.song_recommender:
+                song = self._pick_song_sync(message_type, {"date": date.today().isoformat()})
+                if song:
+                    message = self._add_song_to_message(message, song, message_type)
+            
+            return message
             
         except Exception as e:
             logger.exception(
@@ -536,6 +577,47 @@ class MessageComposer:
                 message_type=message_type.value
             )
             return f"Error generating preview for {message_type.value} message"
+    
+    def _pick_song_sync(self, message_type: MessageType, day_ctx: Dict[str, Any]) -> Optional[SongRecommendation]:
+        """Synchronous version of pick_song for preview purposes."""
+        if not self.song_recommender:
+            return None
+        
+        try:
+            # Get recent song IDs to avoid repeats
+            cache_days = self.config.get_song_recommendation_setting("song_cache_days", 30)
+            recent_ids = self.storage.get_recent_song_ids(cache_days)
+            
+            # Generate a simple query based on message type
+            vibe_map = {
+                MessageType.MORNING: "morning romantic",
+                MessageType.FLIRTY: "romantic love",
+                MessageType.NIGHT: "night romantic"
+            }
+            query_text = vibe_map.get(message_type, "romantic")
+            
+            # Get preferences
+            preferences = self._get_song_preferences()
+            
+            # Get recommendation
+            song_dict = self.song_recommender.recommend_song(
+                query_text=query_text,
+                preferences=preferences,
+                recent_ids=recent_ids
+            )
+            
+            if song_dict:
+                return SongRecommendation(
+                    song_id=song_dict.get("song_id", "unknown"),
+                    title=song_dict.get("title", "Unknown Song"),
+                    url=song_dict.get("url", "")
+                )
+            
+            return None
+            
+        except Exception as e:
+            logger.error(f"Failed to pick song for preview: {e}")
+            return None
     
     def get_fallback_templates(self, message_type: MessageType) -> List[str]:
         """Get fallback templates for a message type.

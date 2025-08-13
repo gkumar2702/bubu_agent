@@ -184,7 +184,7 @@ class BubuCLI:
                         message_type, custom_message
                     )
                 else:
-                    success, result_message, provider_info = await self.scheduler.send_message_now(message_type)
+                    success, result_message, provider_info = await self.scheduler.send_message_now_with_info(message_type)
                 
                 progress.update(task, advance=1)
                 
