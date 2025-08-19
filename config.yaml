@@ -117,7 +117,7 @@ huggingface:
   do_sample: true
   timeout_seconds: 120
   max_retries: 3
-  model_id: "Qwen/Qwen3-4B-Instruct-2507"
+  model_id: "openai-community/gpt2-medium"
 
 # Bollywood song recommendation settings
 song_recommendation:

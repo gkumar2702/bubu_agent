@@ -31,11 +31,8 @@ class MessageScheduler:
         self.messenger = self._create_messenger()
         
         # Create LLM instance for refactored composer
-        from providers.huggingface_llm import HuggingFaceLLM
-        self.llm = HuggingFaceLLM(
-            api_key=config.settings.hf_api_key,
-            model_id=config.settings.hf_model_id
-        )
+        from .llm_factory import create_llm
+        self.llm = create_llm()
         
         # Create refactored composer with LLM and storage
         self.composer = create_message_composer_refactored(self.llm, self.storage)

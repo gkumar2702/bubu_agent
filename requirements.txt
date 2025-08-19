@@ -43,3 +43,8 @@ sentence-transformers>=2.2.0
 pandas>=2.0.0
 numpy>=1.24.0
 faiss-cpu>=1.7.0  # Use faiss-gpu for GPU support
+
+# Local Transformers Dependencies
+torch>=2.0.0
+transformers>=4.35.0
+accelerate>=0.20.0

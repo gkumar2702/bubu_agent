@@ -17,8 +17,7 @@ from utils import (
 )
 from utils.compose_refactored import create_message_composer_refactored
 from utils.types import MessageType
-from providers.huggingface_llm import HuggingFaceLLM
-from providers.local_transformers_llm import LocalTransformersLLM
+from utils.llm_factory import create_llm
 
 # Setup logging
 setup_logging(config.settings.log_level)
@@ -37,27 +36,8 @@ security = HTTPBearer()
 # Create scheduler instance
 scheduler = MessageScheduler()
 
-# Create LLM instance
-# Allow switching to local transformers by environment flag
-use_local = False
-try:
-    import os
-    use_local = os.getenv("USE_LOCAL_LLM", "false").lower() in ("1", "true", "yes")
-except Exception:
-    use_local = False
-
-if use_local:
-    # Allow YAML override for model id
-    _model_id = config.get_hf_setting("model_id", config.settings.hf_model_id) or config.settings.hf_model_id
-    llm = LocalTransformersLLM(model_id=_model_id)
-    logger.info("Using LocalTransformersLLM", model_id=_model_id)
-else:
-    _model_id = config.get_hf_setting("model_id", config.settings.hf_model_id) or config.settings.hf_model_id
-    llm = HuggingFaceLLM(
-        api_key=config.settings.hf_api_key,
-        model_id=_model_id
-    )
-    logger.info("Using HuggingFaceLLM", model_id=_model_id)
+# Create LLM instance using factory
+llm = create_llm()
 
 
 class MessagePreviewRequest(BaseModel):
@@ -330,7 +310,7 @@ async def send_message_now(
             success, result_message, provider_info = await scheduler.send_custom_message(request.type, request.message)
         else:
             # Generate and send message
-        success, result_message, provider_info = await scheduler.send_message_now_with_info(request.type)
+            success, result_message, provider_info = await scheduler.send_message_now_with_info(request.type)
         
         return SendNowResponse(
             success=success,

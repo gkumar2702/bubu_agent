@@ -28,7 +28,7 @@ from utils import (
 )
 from utils.compose_refactored import create_message_composer_refactored
 from utils.types import MessageType
-from providers.huggingface_llm import HuggingFaceLLM
+from utils.llm_factory import create_llm
 
 # Setup logging
 setup_logging(config.settings.log_level)
@@ -79,10 +79,7 @@ class BubuCLI:
     def __init__(self):
         """Initialize the CLI with scheduler and composer."""
         self.scheduler = MessageScheduler()
-        self.llm = HuggingFaceLLM(
-            api_key=config.settings.hf_api_key,
-            model_id=config.settings.hf_model_id
-        )
+        self.llm = create_llm()
         self.composer = create_message_composer_refactored(self.llm, self.scheduler.storage)
     
     def show_status(self):

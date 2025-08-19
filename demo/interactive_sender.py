@@ -15,16 +15,26 @@ import sys
 from typing import List, Dict, Any
 from datetime import datetime
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables
-load_dotenv()
+# Load environment variables from the project root
+project_root = Path(__file__).parent.parent
+env_path = project_root / ".env"
+load_dotenv(env_path)
 
 class InteractiveSender:
     def __init__(self, base_url: str = "http://localhost:8000"):
         self.base_url = base_url
-        self.client = httpx.AsyncClient()
+        # Increase timeout to handle slow AI generation
+        self.client = httpx.AsyncClient(timeout=120.0)
         self.bearer_token = os.getenv("API_BEARER_TOKEN", "your_secure_bearer_token_here")
+        
+        # Debug: Check if token was loaded correctly
+        if self.bearer_token == "your_secure_bearer_token_here":
+            print("⚠️  Warning: Using default bearer token. Check if .env file exists and contains API_BEARER_TOKEN")
+        else:
+            print(f"✅ Bearer token loaded: {self.bearer_token[:8]}...{self.bearer_token[-4:]}")
         
     async def __aenter__(self):
         return self
@@ -32,11 +42,13 @@ class InteractiveSender:
     async def __aexit__(self, exc_type, exc_val, exc_tb):
         await self.client.aclose()
     
-    async def get_message_options(self, message_type: str) -> List[Dict[str, Any]]:
+    async def get_message_options(self, message_type: str, use_ai: bool = False) -> List[Dict[str, Any]]:
         """Get 5 message options for a specific type."""
         try:
             # Use the config preview endpoint to get message options
-            # Enable AI generation with Bollywood quotes and cheesy lines by default
+            generation_type = "AI-generated" if use_ai else "fallback templates"
+            print(f"   Generating {generation_type} messages...")
+            
             response = await self.client.post(
                 f"{self.base_url}/config/preview",
                 json={
@@ -45,7 +57,7 @@ class InteractiveSender:
                         "count": 5,
                         "include_fallback": True,
                         "randomize": True,
-                        "use_ai_generation": True  # Enable AI generation with Bollywood features
+                        "use_ai_generation": use_ai
                     }
                 },
                 headers={"Authorization": f"Bearer {self.bearer_token}"}
@@ -56,10 +68,13 @@ class InteractiveSender:
                 return data.get("messages", [])
             else:
                 print(f"❌ Error getting messages: {response.status_code}")
+                print(f"   Response: {response.text}")
                 return []
                 
         except Exception as e:
             print(f"❌ Error connecting to Bubu Agent: {e}")
+            import traceback
+            traceback.print_exc()
             return []
     
     async def send_message(self, message_type: str, message_text: str) -> bool:
@@ -142,13 +157,39 @@ class InteractiveSender:
         try:
             health_response = await self.client.get(f"{self.base_url}/healthz")
             if health_response.status_code != 200:
-                print("❌ Bubu Agent is not running or not accessible")
+                print(f"❌ Bubu Agent health check failed: {health_response.status_code}")
+                print(f"   Response: {health_response.text}")
                 return
             print("✅ Connected to Bubu Agent successfully!")
         except Exception as e:
             print(f"❌ Cannot connect to Bubu Agent: {e}")
             print("   Make sure the server is running with: uvicorn setup.app:app --host 0.0.0.0 --port 8000")
+            import traceback
+            traceback.print_exc()
             return
+        
+        # Ask user if they want to use AI generation
+        print("\n🤖 MESSAGE GENERATION OPTIONS")
+        print("=" * 40)
+        print("1. 📋 Fallback Templates (Fast, reliable)")
+        print("2. 🧠 AI Generated (Slower, creative, requires valid HF API key)")
+        
+        while True:
+            try:
+                choice = input("Choose generation method (1 or 2): ").strip()
+                if choice == "1":
+                    use_ai_generation = False
+                    print("✅ Using fallback templates")
+                    break
+                elif choice == "2":
+                    use_ai_generation = True
+                    print("✅ Using AI generation")
+                    break
+                else:
+                    print("❌ Please enter 1 or 2")
+            except KeyboardInterrupt:
+                print("\n👋 Goodbye!")
+                return
         
         message_types = ["morning", "flirty", "night"]
         sent_messages = []
@@ -157,7 +198,7 @@ class InteractiveSender:
             print(f"\n{'🔄'*20}")
             print(f"Getting {msg_type} message options...")
             
-            messages = await self.get_message_options(msg_type)
+            messages = await self.get_message_options(msg_type, use_ai_generation)
             
             if not messages:
                 print(f"❌ No {msg_type} messages available")
