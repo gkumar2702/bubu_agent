@@ -48,3 +48,9 @@ faiss-cpu>=1.7.0  # Use faiss-gpu for GPU support
 torch>=2.0.0
 transformers>=4.35.0
 accelerate>=0.20.0
+
+# Optional: Flash Attention for better performance with GPT-OSS
+# flash-attn>=2.0.0  # Uncomment if you have a compatible GPU
+
+# Additional dependencies for GPT-OSS optimization
+bitsandbytes>=0.41.0  # For 8-bit quantization if needed

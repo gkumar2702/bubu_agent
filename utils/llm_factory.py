@@ -20,6 +20,11 @@ def create_llm() -> LLMProtocol:
     api_key = config.settings.hf_api_key
     model_id = config.settings.hf_model_id
     
+    # Always use local transformers for GPT-OSS models (they're designed for local use)
+    if "gpt-oss" in model_id.lower():
+        logger.info("Using local transformers for GPT-OSS model", model_id=model_id)
+        return LocalTransformersLLM(model_id=model_id)
+    
     # Use local transformers if API key is 'local' or invalid
     if api_key == "local" or api_key == "your_valid_hf_api_key_here":
         logger.info("Using local transformers LLM", model_id=model_id)
