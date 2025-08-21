@@ -23,7 +23,15 @@ def create_llm() -> LLMProtocol:
     # Always use local transformers for GPT-OSS models (they're designed for local use)
     if "gpt-oss" in model_id.lower():
         logger.info("Using local transformers for GPT-OSS model", model_id=model_id)
-        return LocalTransformersLLM(model_id=model_id)
+        try:
+            return LocalTransformersLLM(model_id=model_id)
+        except Exception as e:
+            logger.error(f"Failed to load GPT-OSS model: {e}")
+            logger.info("Falling back to smaller model for compatibility")
+            # Fallback to a smaller, more compatible model
+            fallback_model = "microsoft/DialoGPT-medium"
+            logger.info(f"Using fallback model: {fallback_model}")
+            return LocalTransformersLLM(model_id=fallback_model)
     
     # Use local transformers if API key is 'local' or invalid
     if api_key == "local" or api_key == "your_valid_hf_api_key_here":

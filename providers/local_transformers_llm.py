@@ -35,14 +35,38 @@ def _ensure_model_loaded(model_id: str):
     if "gpt-oss" in model_id.lower():
         logger.info("Detected GPT-OSS model, using optimized loading parameters")
         tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)
-        model = AutoModelForCausalLM.from_pretrained(
-            model_id,
-            torch_dtype="auto",  # Uses BF16 automatically for GPT-OSS
-            device_map="auto",
-            trust_remote_code=True,
-            low_cpu_mem_usage=True,
-            attn_implementation="flash_attention_2" if _has_flash_attention() else None,
-        )
+        
+        # Try GPU first, fallback to CPU if needed
+        try:
+            logger.info("Attempting GPU loading for GPT-OSS model")
+            model = AutoModelForCausalLM.from_pretrained(
+                model_id,
+                torch_dtype="auto",  # Uses BF16 automatically for GPT-OSS
+                device_map="auto",
+                trust_remote_code=True,
+                low_cpu_mem_usage=True,
+                attn_implementation="flash_attention_2" if _has_flash_attention() else None,
+            )
+        except Exception as gpu_error:
+            logger.warning(f"GPU loading failed, trying CPU: {gpu_error}")
+            try:
+                # Fallback to CPU with different settings
+                model = AutoModelForCausalLM.from_pretrained(
+                    model_id,
+                    torch_dtype="float32",  # Use float32 for CPU
+                    device_map="cpu",       # Force CPU
+                    trust_remote_code=True,
+                    low_cpu_mem_usage=True,
+                )
+                logger.info("Successfully loaded GPT-OSS model on CPU")
+            except Exception as cpu_error:
+                logger.error(f"Both GPU and CPU loading failed: {cpu_error}")
+                # Try with minimal settings as last resort
+                model = AutoModelForCausalLM.from_pretrained(
+                    model_id,
+                    trust_remote_code=True,
+                )
+                logger.info("Loaded GPT-OSS model with minimal settings")
     else:
         # Default loading for other models
         tokenizer = AutoTokenizer.from_pretrained(model_id, trust_remote_code=True)

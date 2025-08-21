@@ -117,7 +117,7 @@ huggingface:
   do_sample: true
   timeout_seconds: 120
   max_retries: 3
-  model_id: "openai/gpt-oss-20b"
+  model_id: "microsoft/DialoGPT-medium"
 
 # Bollywood song recommendation settings
 song_recommendation:

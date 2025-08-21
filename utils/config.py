@@ -21,7 +21,7 @@ class Settings(BaseSettings):
     
     # Hugging Face settings
     hf_api_key: str = Field(..., description="Hugging Face API key")
-    hf_model_id: str = Field(default="openai/gpt-oss-20b", description="Hugging Face model ID")
+    hf_model_id: str = Field(default="microsoft/DialoGPT-medium", description="Hugging Face model ID")
     
     # WhatsApp provider settings
     whatsapp_provider: str = Field(default="twilio", description="WhatsApp provider (twilio/meta/ultramsg)")
