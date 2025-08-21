@@ -125,12 +125,21 @@ class LocalTransformersLLM(LLMProtocol):
             messages.append({"role": "user", "content": user_prompt})
 
             def _generate_sync() -> str:
-                # Use the harmony response format for GPT-OSS models
-                text = tokenizer.apply_chat_template(
-                    messages,
-                    tokenize=False,
-                    add_generation_prompt=True,
-                )
+                # Check if model supports chat templates
+                if hasattr(tokenizer, 'chat_template') and tokenizer.chat_template:
+                    # Use the harmony response format for GPT-OSS models
+                    text = tokenizer.apply_chat_template(
+                        messages,
+                        tokenize=False,
+                        add_generation_prompt=True,
+                    )
+                else:
+                    # For models without chat templates (like BLOOM), concatenate directly
+                    if system_prompt:
+                        text = f"{system_prompt}\n\n{user_prompt}"
+                    else:
+                        text = user_prompt
+                
                 inputs = tokenizer([text], return_tensors="pt").to(model.device)
                 
                 # Optimized generation parameters for GPT-OSS

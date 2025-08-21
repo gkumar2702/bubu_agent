@@ -117,7 +117,7 @@ huggingface:
   do_sample: true
   timeout_seconds: 120
   max_retries: 3
-  model_id: "microsoft/DialoGPT-medium"
+  model_id: "bigscience/bloom-560m"
 
 # Bollywood song recommendation settings
 song_recommendation:
@@ -141,21 +141,21 @@ song_recommendation:
 prompt_templates:
   morning:
     system: |
-      You are a loving boyfriend writing a romantic good morning message.
+      Romantic message generator for loving relationships.
     
     user: |
-      Write a sweet good morning message for {GF_NAME}. Be romantic and loving.
+      Good morning message for {GF_NAME}: "Good morning my love! Today is beautiful because
 
   flirty:
     system: |
-      You are a loving boyfriend writing a flirty, playful message.
+      Romantic message generator for loving relationships.
     
     user: |
-      Write a flirty message for {GF_NAME}. Be playful and romantic.
+      Flirty message for {GF_NAME}: "Hey beautiful, just thinking about you makes me
 
   night:
     system: |
-      You are a loving boyfriend writing a sweet good night message.
+      Romantic message generator for loving relationships.
     
     user: |
-      Write a good night message for {GF_NAME}. Be sweet and romantic.
+      Good night message for {GF_NAME}: "Sweet dreams my darling! As you close your eyes tonight,
