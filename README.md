@@ -389,7 +389,7 @@ SENDER_WHATSAPP_NUMBER=+1234567890
 HF_API_KEY=your_huggingface_api_key
 
 # AI model to use for message generation
-HF_MODEL_ID=Qwen/Qwen2.5-7B-Instruct
+HF_MODEL_ID=openai/gpt-oss-20b
 
 # =============================================================================
 # WHATSAPP PROVIDER SETTINGS
@@ -670,13 +670,13 @@ python setup/switch_to_ultramsg.py
    - Create a new token
 
 2. **Choose Model**
-   - Recommended: `Qwen/Qwen2.5-7B-Instruct`
-   - Alternative: `microsoft/DialoGPT-medium` or similar
+   - Recommended: `openai/gpt-oss-20b` (Advanced 21B parameter model optimized for conversational AI)
+   - Alternative: `microsoft/DialoGPT-medium` (for limited resources) or `openai/gpt-oss-120b` (for premium performance)
 
 3. **Configure Environment**
    ```bash
    HF_API_KEY=your_api_key
-   HF_MODEL_ID=Qwen/Qwen2.5-7B-Instruct
+   HF_MODEL_ID=openai/gpt-oss-20b
    ```
 
 ## API Endpoints

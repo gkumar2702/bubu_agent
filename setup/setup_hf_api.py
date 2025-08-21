@@ -83,11 +83,12 @@ def main():
     
     # Recommended models (known to work well)
     recommended_models = [
-        "microsoft/DialoGPT-medium",
-        "microsoft/DialoGPT-small", 
-        "gpt2",
-        "gpt2-medium",
-        "facebook/blenderbot-400M-distill"
+        "openai/gpt-oss-20b",          # Best: Advanced conversational AI
+        "openai/gpt-oss-120b",         # Premium: Larger model if you have resources
+        "microsoft/DialoGPT-medium",   # Fallback: Older but reliable
+        "microsoft/DialoGPT-small",    # Lightweight: For limited resources
+        "gpt2-medium",                 # Basic: Simple text generation
+        "facebook/blenderbot-400M-distill"  # Alternative: Facebook's model
     ]
     
     print("\n📋 STEP 1: Get a Hugging Face API Key")
@@ -131,8 +132,8 @@ def main():
     
     if not working_models:
         print("❌ No recommended models are working. You may need to wait or try later.")
-        print("   Using 'gpt2' as fallback (may need time to load)")
-        chosen_model = "gpt2"
+        print("   Using 'openai/gpt-oss-20b' as fallback (best available model)")
+        chosen_model = "openai/gpt-oss-20b"
     else:
         print(f"\n✅ Found {len(working_models)} working models:")
         for i, model in enumerate(working_models, 1):

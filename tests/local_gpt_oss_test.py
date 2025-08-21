@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
+"""Test script for OpenAI GPT-OSS-20B local model loading and inference."""
+
 import os
 from transformers import AutoModelForCausalLM, AutoTokenizer
 
-# Allow override via env var; default to Qwen 4B Instruct
-model_name = os.getenv("LOCAL_LLM_MODEL", "Qwen/Qwen3-4B-Instruct-2507")
+# Allow override via env var; default to GPT-OSS-20B
+model_name = os.getenv("LOCAL_LLM_MODEL", "openai/gpt-oss-20b")
 
-print(f"Loading model: {model_name}")
+print(f"🧪 Testing GPT-OSS model: {model_name}")
+print("⚠️  Note: First run will download ~10GB model files")
 
 tokenizer = AutoTokenizer.from_pretrained(model_name, trust_remote_code=True)
 model = AutoModelForCausalLM.from_pretrained(

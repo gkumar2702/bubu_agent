@@ -143,7 +143,7 @@ SENDER_WHATSAPP_NUMBER=+1234567890
 # HUGGING FACE AI SETTINGS
 # =============================================================================
 HF_API_KEY=your_huggingface_api_key
-HF_MODEL_ID=Qwen/Qwen2.5-7B-Instruct
+HF_MODEL_ID=openai/gpt-oss-20b
 
 # =============================================================================
 # WHATSAPP PROVIDER SETTINGS
