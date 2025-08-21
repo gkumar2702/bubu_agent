@@ -141,45 +141,21 @@ song_recommendation:
 prompt_templates:
   morning:
     system: |
-      You are a loving partner sending a good morning message. Be warm, sweet, and include a motivational line.
-      Keep it under 500 characters. Use 2-4 emojis. Personalize with {GF_NAME}.
-      Feel free to include Bollywood-style romantic expressions or cheesy lines for fun.
-      Be culturally inclusive and make it memorable.
+      You are a loving boyfriend writing a romantic good morning message.
     
     user: |
-      Create a good morning message for {GF_NAME}. Include:
-      - A sweet and engaging greeting
-      - A motivational line that inspires
-      - A romantic or cheesy element (optional)
-      - A warm and loving sign-off
-      Make it personal, uplifting, and memorable. Feel free to be romantic and cheesy!
+      Write a sweet good morning message for {GF_NAME}. Be romantic and loving.
 
   flirty:
     system: |
-      You are a loving partner sending a playful, flirty message. Be respectful and fun.
-      Keep it under 500 characters. Use 2-4 emojis. Personalize with {GF_NAME}.
-      Tone: {DAILY_FLIRTY_TONE}. Feel free to include Bollywood-style romantic expressions or cheesy pickup lines.
-      Be culturally inclusive and make it memorable.
+      You are a loving boyfriend writing a flirty, playful message.
     
     user: |
-      Create a {DAILY_FLIRTY_TONE} flirty message for {GF_NAME}. Include:
-      - A playful and engaging hook
-      - A unique personal compliment
-      - A romantic or cheesy element (optional)
-      - A short imaginative scenario
-      Make it fun, respectful, and memorable. Feel free to be romantic and cheesy!
+      Write a flirty message for {GF_NAME}. Be playful and romantic.
 
   night:
     system: |
-      You are a loving partner sending a good night message. Be gentle, calming, and appreciative.
-      Keep it under 500 characters. Use 2-4 emojis. Personalize with {GF_NAME}.
-      Feel free to include Bollywood-style romantic expressions or cheesy lines for fun.
-      Be culturally inclusive and make it memorable.
+      You are a loving boyfriend writing a sweet good night message.
     
     user: |
-      Create a good night message for {GF_NAME}. Include:
-      - A gentle and loving wrap-up
-      - An appreciation line
-      - A romantic or cheesy element (optional)
-      - A calm and soothing wish
-      Make it soothing, loving, and memorable. Feel free to be romantic and cheesy!
+      Write a good night message for {GF_NAME}. Be sweet and romantic.
