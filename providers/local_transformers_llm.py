@@ -161,10 +161,13 @@ class LocalTransformersLLM(LLMProtocol):
 
             output_text: str = await asyncio.to_thread(_generate_sync)
             
-            # Clean up the output for GPT-OSS models
+            # Clean up the output based on model type
             if "gpt-oss" in self.model_id.lower():
                 # Remove any reasoning traces that shouldn't be shown to end users
                 output_text = self._clean_gpt_oss_output(output_text)
+            elif "bloom" in self.model_id.lower():
+                # Clean and truncate BLOOM output for better romantic messages
+                output_text = self._clean_bloom_output(output_text)
             
             return output_text.strip()
         except Exception as e:
@@ -184,5 +187,103 @@ class LocalTransformersLLM(LLMProtocol):
             cleaned_lines.append(line)
         
         return '\n'.join(cleaned_lines).strip()
+    
+    def _clean_bloom_output(self, text: str, max_chars: int = 300) -> str:
+        """Clean BLOOM output for meaningful multi-line romantic messages."""
+        import re
+        
+        # Remove any quotes at the beginning
+        text = text.lstrip('"\'')
+        
+        # Clean up the text first
+        text = re.sub(r'\s+', ' ', text)  # Normalize whitespace
+        text = text.replace('""', '')  # Remove empty quotes
+        text = text.replace('" "', ' ')  # Remove quote spaces
+        
+        # Split into sentences to ensure we get at least 3 meaningful lines
+        sentence_endings = re.compile(r'([.!?]+)')
+        parts = sentence_endings.split(text)
+        
+        sentences = []
+        current_length = 0
+        min_sentences = 3  # Aim for at least 3 sentences
+        
+        i = 0
+        while i < len(parts) - 1:
+            # Combine sentence with its ending punctuation
+            sentence = parts[i].strip()
+            if i + 1 < len(parts):
+                sentence += parts[i + 1]
+            
+            # Skip very short sentences (likely fragments)
+            if len(sentence) < 10 and len(sentences) > 0:
+                i += 2
+                continue
+            
+            # Add the sentence if we haven't reached max length
+            # OR if we need more sentences to reach minimum
+            if current_length + len(sentence) <= max_chars or len(sentences) < min_sentences:
+                sentences.append(sentence.strip())
+                current_length += len(sentence) + 1
+                
+                # Stop if we have enough sentences and good length
+                if len(sentences) >= min_sentences and current_length >= 150:
+                    break
+            else:
+                # If we have minimum sentences, we can stop
+                if len(sentences) >= min_sentences:
+                    break
+                # Otherwise, add a truncated version of this sentence
+                remaining_chars = max_chars - current_length
+                if remaining_chars > 20:
+                    sentences.append(sentence[:remaining_chars-3].strip() + '...')
+                break
+            
+            i += 2
+        
+        # If we don't have enough sentences, keep more of the original text
+        if len(sentences) < min_sentences:
+            # Try to split by commas or other natural breaks
+            if len(sentences) == 1 and len(sentences[0]) > 50:
+                # Split the long sentence into parts
+                first_sentence = sentences[0]
+                parts = first_sentence.split(', ')
+                if len(parts) >= 2:
+                    sentences = []
+                    for j, part in enumerate(parts[:3]):  # Take up to 3 parts
+                        if j == len(parts[:3]) - 1:
+                            sentences.append(part.strip())
+                        else:
+                            sentences.append(part.strip() + ',')
+        
+        # Format as multi-line message
+        if len(sentences) >= 3:
+            # Format as 3 distinct lines for better readability
+            result = sentences[0]
+            if len(sentences) > 1:
+                result += ' ' + sentences[1]
+            if len(sentences) > 2:
+                result += ' ' + ' '.join(sentences[2:])
+        else:
+            result = ' '.join(sentences)
+        
+        # Ensure proper ending
+        if result and result[-1] not in '.!?':
+            result += '.'
+        
+        # Final length check
+        if len(result) > max_chars:
+            # Find a good breaking point
+            last_sentence_end = max(
+                result.rfind('. ', 0, max_chars),
+                result.rfind('! ', 0, max_chars),
+                result.rfind('? ', 0, max_chars)
+            )
+            if last_sentence_end > max_chars * 0.6:
+                result = result[:last_sentence_end + 1]
+            else:
+                result = result[:max_chars-3] + '...'
+        
+        return result.strip()
 
 

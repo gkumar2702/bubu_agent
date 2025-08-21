@@ -111,9 +111,9 @@ content_policy:
 
 # Hugging Face model settings
 huggingface:
-  max_new_tokens: 150
-  temperature: 0.8
-  top_p: 0.9
+  max_new_tokens: 100  # Increased for multi-line messages
+  temperature: 0.8    # Balanced for creativity and coherence
+  top_p: 0.9          # Wider sampling for variety
   do_sample: true
   timeout_seconds: 120
   max_retries: 3
@@ -141,21 +141,21 @@ song_recommendation:
 prompt_templates:
   morning:
     system: |
-      Romantic message generator for loving relationships.
+      Generate romantic messages with warmth and affection.
     
     user: |
-      Good morning message for {GF_NAME}: "Good morning my love! Today is beautiful because
+      Write a loving good morning message for {GF_NAME}: "Good morning my beautiful {GF_NAME}! Waking up knowing you're in my life makes every sunrise special. Today I want to tell you that
 
   flirty:
     system: |
-      Romantic message generator for loving relationships.
+      Generate playful and romantic messages with charm.
     
     user: |
-      Flirty message for {GF_NAME}: "Hey beautiful, just thinking about you makes me
+      Write a flirty romantic message for {GF_NAME}: "Hey gorgeous {GF_NAME}, you know what I love about you? Everything! But especially the way you
 
   night:
     system: |
-      Romantic message generator for loving relationships.
+      Generate sweet and caring good night messages.
     
     user: |
-      Good night message for {GF_NAME}: "Sweet dreams my darling! As you close your eyes tonight,
+      Write a loving good night message for {GF_NAME}: "Good night my sweet {GF_NAME}! As the stars light up the sky tonight, I'm thinking about how you light up my world. Dream of
