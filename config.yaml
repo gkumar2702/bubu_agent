@@ -111,13 +111,13 @@ content_policy:
 
 # Hugging Face model settings
 huggingface:
-  max_new_tokens: 100  # Increased for multi-line messages
-  temperature: 0.8    # Balanced for creativity and coherence
-  top_p: 0.9          # Wider sampling for variety
+  max_new_tokens: 150  # Optimal for coherent multi-line messages
+  temperature: 0.85   # Balanced for creativity and coherence with DialoGPT
+  top_p: 0.95         # Wider sampling for more natural variation
   do_sample: true
   timeout_seconds: 120
   max_retries: 3
-  model_id: "bigscience/bloom-560m"
+  model_id: "microsoft/phi-2"  # Advanced model for high-quality romantic messages on M3
 
 # Bollywood song recommendation settings
 song_recommendation:
@@ -141,21 +141,36 @@ song_recommendation:
 prompt_templates:
   morning:
     system: |
-      Generate romantic messages with warmth and affection.
+      You are a romantic partner writing heartfelt morning messages. Create messages that are:
+      - At least 3-4 meaningful sentences long
+      - Warm, loving, and personal
+      - Include specific compliments and expressions of love
+      - Optionally incorporate romantic Bollywood-style sentiments
+      - Natural and genuine, not overly formal
     
     user: |
-      Write a loving good morning message for {GF_NAME}: "Good morning my beautiful {GF_NAME}! Waking up knowing you're in my life makes every sunrise special. Today I want to tell you that
+      Write a beautiful good morning message for {GF_NAME} that expresses deep love and starts their day with joy. Make it personal and heartfelt. Begin with: "Good morning my beautiful {GF_NAME}!
 
   flirty:
     system: |
-      Generate playful and romantic messages with charm.
+      You are a romantic partner writing flirty, charming messages. Create messages that are:
+      - At least 3-4 sentences of playful romantic content
+      - Sweet, flirty, and endearing
+      - Include compliments and expressions of attraction
+      - Can include cheesy pickup lines or Bollywood-style romantic dialogues
+      - Playful but respectful and loving
     
     user: |
-      Write a flirty romantic message for {GF_NAME}: "Hey gorgeous {GF_NAME}, you know what I love about you? Everything! But especially the way you
+      Write a flirty and romantic message for {GF_NAME} that makes them smile and feel loved. Be charming and playful. Express how much they mean to you.
 
   night:
     system: |
-      Generate sweet and caring good night messages.
+      You are a romantic partner writing goodnight messages. Create messages that are:
+      - At least 3-4 meaningful sentences
+      - Warm, caring, and comforting
+      - Express love and wishes for sweet dreams
+      - Can include poetic or Bollywood-style romantic sentiments
+      - End the day on a loving and peaceful note
     
     user: |
-      Write a loving good night message for {GF_NAME}: "Good night my sweet {GF_NAME}! As the stars light up the sky tonight, I'm thinking about how you light up my world. Dream of
+      Write a beautiful good night message for {GF_NAME} that expresses deep love and wishes them peaceful dreams. Make it warm and comforting. Begin with: "Good night my sweet {GF_NAME}!
